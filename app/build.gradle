@@ -1,19 +1,12 @@
 apply plugin: 'com.android.application'
 
-// Release signing: a gitignored keystore.properties in the repo root (storeFile, storePassword,
-// keyAlias, keyPassword) wins; otherwise the committed, public dummy keystore is used, so
-// release builds work out of the box but are NOT suitable for distribution.
+// Release signing comes from keystore.properties in the repo root (storeFile, storePassword,
+// keyAlias, keyPassword; storeFile relative to the repo root). It and the keystore are
+// gitignored; `just keystore` creates both. Without it, release builds are left unsigned.
 def keystoreProps = new Properties()
 def keystorePropsFile = rootProject.file('keystore.properties')
 if (keystorePropsFile.exists()) {
     keystorePropsFile.withInputStream { keystoreProps.load(it) }
-} else {
-    keystoreProps.putAll([
-            storeFile    : 'keystore/dummy-release.keystore',
-            storePassword: 'slopboard',
-            keyAlias     : 'slopboard',
-            keyPassword  : 'slopboard',
-    ])
 }
 
 android {
@@ -24,15 +17,17 @@ android {
         compileSdk 37
         minSdkVersion 24
         targetSdkVersion 37
-        versionCode 148
-        versionName "6.7"
+        versionCode 149
+        versionName "1.0.0"
     }
     signingConfigs {
         release {
-            storeFile rootProject.file(keystoreProps['storeFile'])
-            storePassword keystoreProps['storePassword']
-            keyAlias keystoreProps['keyAlias']
-            keyPassword keystoreProps['keyPassword']
+            if (keystorePropsFile.exists()) {
+                storeFile rootProject.file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
         }
     }
     buildTypes {
@@ -40,7 +35,9 @@ android {
             applicationIdSuffix ".debug"
         }
         release {
-            signingConfig signingConfigs.release
+            if (keystorePropsFile.exists()) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

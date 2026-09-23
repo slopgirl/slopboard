@@ -21,8 +21,9 @@ just debug     # app/build/outputs/apk/debug/app-debug.apk
 just release   # app/build/outputs/apk/release/app-release.apk
 ```
 
-Release builds are signed with a public dummy key in `keystore/`. To sign with your own key,
-create `keystore.properties` in the repo root:
+Release builds need a signing key. `just keystore` creates a private one in `keystore/` plus
+`keystore.properties` pointing at it (both gitignored; back them up). To use an existing key,
+write `keystore.properties` yourself:
 
 ```properties
 storeFile=path/to/release.jks

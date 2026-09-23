@@ -25,10 +25,17 @@ CHANGELOG.md.
   on `abbreviation_unit_milliseconds`). Not ours.
 
 ## Signing
-- `keystore/dummy-release.keystore` is committed on purpose: PKCS12, alias `slopboard`,
-  store/key password `slopboard`. It's public, so don't use it to distribute builds.
-- For a real key create `keystore.properties` in the repo root (gitignored):
-  `storeFile`, `storePassword`, `keyAlias`, `keyPassword` (storeFile relative to repo root).
+- Release signing: gitignored `keystore.properties` (storeFile relative to repo root) +
+  `keystore/release.keystore`, created by `just keystore` (random password, alias slopboard).
+  Without it `just release` stops; plain `gradle assembleRelease` makes an unsigned APK.
+- Never commit a keystore. The early public dummy key (password "slopboard") was purged from
+  history on 2026-09-24; it had been pushed to GitHub before that, so treat it as public.
+- Losing the key means installed builds can't be updated, only uninstalled + reinstalled.
+
+## Versioning
+- slopboard has its own semver, starting at 1.0.0 (versionCode 149, continuing upstream's
+  148 so it's never a downgrade). Tags: `v<version>`. Bump versionName/versionCode in
+  app/build.gradle and move CHANGELOG's Unreleased entries into a version section.
 
 ## Vibration feature
 - `pref_vibration_duration` int: -1 = system default (EFFECT_CLICK), 0 = off, 1–100 ms one-shot.

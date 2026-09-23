@@ -8,9 +8,29 @@ default:
 debug:
     gradle assembleDebug -q
 
-# Build the release APK (signed with keystore.properties, else the public dummy key)
+# Build the release APK, signed with the key from keystore.properties (see `just keystore`)
 release:
+    @test -f keystore.properties || { echo "No keystore.properties: run 'just keystore' first" >&2; exit 1; }
     gradle assembleRelease -q
+
+# Create a private release signing key and keystore.properties (both gitignored). Refuses to
+# overwrite an existing key: losing it means apps signed with it can't be updated any more.
+keystore:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ -e keystore.properties ] || [ -e keystore/release.keystore ]; then
+        echo "keystore.properties or keystore/release.keystore already exists; not overwriting" >&2
+        exit 1
+    fi
+    mkdir -p keystore
+    pass=$(openssl rand -base64 24 | tr -d '/+=')
+    keytool -genkeypair -keystore keystore/release.keystore -storetype PKCS12 \
+        -alias slopboard -keyalg RSA -keysize 4096 -validity 36500 \
+        -storepass "$pass" -keypass "$pass" -dname "CN=slopboard, O=slopgirl" 2>&1 | tail -1
+    printf 'storeFile=keystore/release.keystore\nstorePassword=%s\nkeyAlias=slopboard\nkeyPassword=%s\n' \
+        "$pass" "$pass" > keystore.properties
+    chmod 600 keystore.properties keystore/release.keystore
+    echo "Created keystore/release.keystore and keystore.properties. Back both up somewhere safe."
 
 # Build debug and release APKs
 build: debug release

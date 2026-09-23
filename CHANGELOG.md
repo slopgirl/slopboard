@@ -6,7 +6,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
-Based on upstream 6.7 (versionCode 148).
+## [1.0.0] - 2026-09-24
+
+First slopboard release, based on upstream Simple Keyboard 6.7 (versionCode 148).
 
 ### Changed
 - Own app identity: applicationId `dev.macroslop.slopboard` (debug builds: `.debug` suffix) and
@@ -41,6 +43,6 @@ Based on upstream 6.7 (versionCode 148).
   gave the system tick vibration (Android 10+), at most every 100 ms.
 - Holding a key (including backspace) vibrates for every repeated character, not only the first
   press.
-- Release builds are signed out of the box with a public dummy keystore; a gitignored
-  `keystore.properties` switches to a real key.
+- `just keystore` creates a private release signing key and the gitignored `keystore.properties`
+  that release builds are signed with.
 - justfile, CHANGELOG and NOTES.

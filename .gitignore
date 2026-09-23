@@ -41,9 +41,9 @@ captures/
 *.iml
 .idea/workspace.xml
 
-# Keystore files
+# Release signing: keystore and its config stay local (`just keystore` creates them)
 *.jks
-# Real release signing config (see app/build.gradle); keystore/dummy-release.keystore is public
+/keystore/
 keystore.properties
 
 .idea
