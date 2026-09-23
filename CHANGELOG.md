@@ -20,6 +20,8 @@ Based on upstream 6.7 (versionCode 148).
 - Test text field at the top of the key press settings, and in the vibration duration, sound
   volume and long-press delay dialogs. In the dialogs the keyboard uses the slider's value
   before it is saved.
+- Holding a key (including backspace) vibrates for every repeated character, not only the first
+  press.
 - Release builds are signed out of the box with a public dummy keystore; a gitignored
   `keystore.properties` switches to a real key.
 - justfile, CHANGELOG and NOTES.

@@ -81,7 +81,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     private static final boolean TRACE = false;
 
     private static final int EXTENDED_TOUCHABLE_REGION_HEIGHT = 100;
-    private static final int PERIOD_FOR_AUDIO_AND_HAPTIC_FEEDBACK_IN_KEY_REPEAT = 2;
+    private static final int PERIOD_FOR_AUDIO_FEEDBACK_IN_KEY_REPEAT = 2;
     private static final int PENDING_IMS_CALLBACK_DURATION_MILLIS = 800;
     static final long DELAY_DEALLOCATE_MEMORY_MILLIS = TimeUnit.SECONDS.toMillis(10);
 
@@ -816,21 +816,18 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             // No need to feedback while finger is dragging.
             return;
         }
-        if (repeatCount > 0) {
-            if (code == Constants.CODE_DELETE && !mInputLogic.mConnection.canDeleteCharacters()) {
-                // No need to feedback when repeat delete key will have no effect.
-                return;
-            }
-            // TODO: Use event time that the last feedback has been generated instead of relying on
-            // a repeat count to thin out feedback.
-            if (repeatCount % PERIOD_FOR_AUDIO_AND_HAPTIC_FEEDBACK_IN_KEY_REPEAT == 0) {
-                return;
-            }
+        if (repeatCount > 0
+                && code == Constants.CODE_DELETE && !mInputLogic.mConnection.canDeleteCharacters()) {
+            // No need to feedback when repeat delete key will have no effect.
+            return;
         }
         final AudioAndHapticFeedbackManager feedbackManager = AudioAndHapticFeedbackManager.getInstance();
-        if (repeatCount == 0) {
-            // TODO: Reconsider how to perform haptic feedback when repeating key.
-            feedbackManager.performHapticFeedback(keyboardView);
+        // Vibrate for every repeat of a held key, so each repeated character can be felt.
+        feedbackManager.performHapticFeedback(keyboardView);
+        // TODO: Use event time that the last feedback has been generated instead of relying on
+        // a repeat count to thin out feedback.
+        if (repeatCount > 0 && repeatCount % PERIOD_FOR_AUDIO_FEEDBACK_IN_KEY_REPEAT == 0) {
+            return;
         }
         feedbackManager.performAudioFeedback(code);
     }
