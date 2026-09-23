@@ -29,6 +29,10 @@
 
     <bool name="config_default_vibration_enabled">true</bool>
 
+    <bool name="config_default_vibration_ignore_system_settings">true</bool>
+    <integer name="config_max_vibration_duration">100</integer>
+    <integer name="config_min_vibration_duration">0</integer>
+    <integer name="config_vibration_duration_step">1</integer>
     <integer name="config_default_longpress_key_timeout">300</integer>
     <integer name="config_max_longpress_timeout">700</integer>
     <integer name="config_min_longpress_timeout">100</integer>

@@ -39,6 +39,8 @@ public class SettingsValues {
     // From preferences, in the same order as xml/prefs.xml:
     public final boolean mAutoCap;
     public final boolean mVibrateOn;
+    public final int mVibrationDuration;
+    public final boolean mVibrationIgnoreSystemSettings;
     public final boolean mSoundOn;
     public final boolean mKeyPreviewPopupOn;
     public final boolean mUseOnScreen;
@@ -73,6 +75,8 @@ public class SettingsValues {
         // Get the settings preferences
         mAutoCap = prefs.getBoolean(Settings.PREF_AUTO_CAP, true);
         mVibrateOn = Settings.readVibrationEnabled(prefs, res);
+        mVibrationDuration = Settings.readVibrationDuration(prefs);
+        mVibrationIgnoreSystemSettings = Settings.readVibrationIgnoreSystemSettings(prefs, res);
         mSoundOn = Settings.readKeypressSoundEnabled(prefs, res);
         mKeyPreviewPopupOn = Settings.readKeyPreviewPopupEnabled(prefs, res);
         mUseOnScreen = Settings.readUseOnScreenKeyboard(prefs);

@@ -57,6 +57,16 @@
         android:restrictionType="bool"
         android:defaultValue="true" />
     <restriction
+        android:key="pref_vibration_duration"
+        android:title="@string/prefs_keypress_vibration_duration_settings"
+        android:restrictionType="integer"
+        android:defaultValue="-1" />
+    <restriction
+        android:key="pref_vibration_ignore_system_settings"
+        android:title="@string/vibrate_ignore_system_settings"
+        android:restrictionType="bool"
+        android:defaultValue="true" />
+    <restriction
         android:key="sound_on"
         android:title="@string/sound_on_keypress"
         android:restrictionType="bool"

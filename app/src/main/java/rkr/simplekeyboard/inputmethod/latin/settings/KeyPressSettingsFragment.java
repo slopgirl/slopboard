@@ -33,6 +33,7 @@ import rkr.simplekeyboard.inputmethod.latin.AudioAndHapticFeedbackManager;
  * This settings sub screen handles the following input preferences.
  * - Vibrate on keypress
  * - Keypress vibration duration
+ * - Ignore system vibration settings
  * - Sound on keypress
  * - Keypress sound volume
  * - Popup on keypress
@@ -53,10 +54,58 @@ public final class KeyPressSettingsFragment extends SubScreenFragment {
 
         if (!AudioAndHapticFeedbackManager.getInstance().hasVibrator()) {
             removePreference(Settings.PREF_VIBRATE_ON);
+            removePreference(Settings.PREF_VIBRATION_DURATION);
+            removePreference(Settings.PREF_VIBRATION_IGNORE_SYSTEM_SETTINGS);
         }
 
+        setupKeypressVibrationDurationSettings();
         setupKeypressSoundVolumeSettings();
         setupKeyLongpressTimeoutSettings();
+    }
+
+    private void setupKeypressVibrationDurationSettings() {
+        final SeekBarDialogPreference pref = (SeekBarDialogPreference)findPreference(
+                Settings.PREF_VIBRATION_DURATION);
+        if (pref == null) {
+            return;
+        }
+        final SharedPreferences prefs = getSharedPreferences();
+        final Resources res = getResources();
+        pref.setInterface(new SeekBarDialogPreference.ValueProxy() {
+            @Override
+            public void writeValue(final int value, final String key) {
+                prefs.edit().putInt(key, value).apply();
+            }
+
+            @Override
+            public void writeDefaultValue(final String key) {
+                prefs.edit().remove(key).apply();
+            }
+
+            @Override
+            public int readValue(final String key) {
+                return Settings.readVibrationDuration(prefs);
+            }
+
+            @Override
+            public int readDefaultValue(final String key) {
+                return Settings.readDefaultVibrationDuration();
+            }
+
+            @Override
+            public String getValueText(final int value) {
+                if (value < 0) {
+                    return res.getString(R.string.settings_system_default);
+                }
+                return res.getString(R.string.abbreviation_unit_milliseconds, value);
+            }
+
+            @Override
+            public void feedbackValue(final int value) {
+                AudioAndHapticFeedbackManager.getInstance().vibrate(value,
+                        Settings.readVibrationIgnoreSystemSettings(prefs, res));
+            }
+        });
     }
 
     private void setupKeypressSoundVolumeSettings() {

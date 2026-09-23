@@ -17,9 +17,12 @@
 
 package rkr.simplekeyboard.inputmethod.latin;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.os.Build;
+import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.view.HapticFeedbackConstants;
@@ -39,6 +42,7 @@ import rkr.simplekeyboard.inputmethod.latin.settings.SettingsValues;
  */
 public final class AudioAndHapticFeedbackManager {
     private static final long TICK_FREQUENCY = 100;
+    private static final long DEFAULT_LEGACY_VIBRATION_DURATION = 20;
     private ExecutorService mBackgroundThread;
     private AudioManager mAudioManager;
     private Vibrator mVibrator;
@@ -121,14 +125,51 @@ public final class AudioAndHapticFeedbackManager {
         if (!mSettingsValues.mVibrateOn || mVibrator == null) {
             return;
         }
-        mBackgroundThread.execute(() -> {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                mVibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK));
-            } else if (viewToPerformHapticFeedbackOn != null) {
-                viewToPerformHapticFeedbackOn.performHapticFeedback(
-                        HapticFeedbackConstants.KEYBOARD_TAP,
-                        HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
+        final int duration = mSettingsValues.mVibrationDuration;
+        final boolean ignoreSystemSettings = mSettingsValues.mVibrationIgnoreSystemSettings;
+        if (duration < 0 && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            if (viewToPerformHapticFeedbackOn != null) {
+                mBackgroundThread.execute(() -> {
+                    viewToPerformHapticFeedbackOn.performHapticFeedback(
+                            HapticFeedbackConstants.KEYBOARD_TAP,
+                            HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
+                });
             }
+            return;
+        }
+        vibrate(duration, ignoreSystemSettings);
+    }
+
+    /**
+     * Vibrates for the given duration in milliseconds. A negative duration plays the system
+     * default click effect, zero does nothing.
+     */
+    public void vibrate(final int durationMs, final boolean ignoreSystemSettings) {
+        if (mVibrator == null || durationMs == 0) {
+            return;
+        }
+        mBackgroundThread.execute(() -> {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                // No predefined effects: fall back to a short fixed pulse.
+                final long ms = durationMs < 0 ? DEFAULT_LEGACY_VIBRATION_DURATION : durationMs;
+                if (ignoreSystemSettings) {
+                    mVibrator.vibrate(ms, getBypassAudioAttributes());
+                } else {
+                    mVibrator.vibrate(ms);
+                }
+                return;
+            }
+            final VibrationEffect effect;
+            if (durationMs > 0) {
+                effect = VibrationEffect.createOneShot(durationMs,
+                        VibrationEffect.DEFAULT_AMPLITUDE);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                effect = VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK);
+            } else {
+                effect = VibrationEffect.createOneShot(DEFAULT_LEGACY_VIBRATION_DURATION,
+                        VibrationEffect.DEFAULT_AMPLITUDE);
+            }
+            vibrate(effect, ignoreSystemSettings);
         });
     }
 
@@ -141,10 +182,39 @@ public final class AudioAndHapticFeedbackManager {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             mLastTickTime = System.currentTimeMillis();
+            final boolean ignoreSystemSettings = mSettingsValues.mVibrationIgnoreSystemSettings;
             mBackgroundThread.execute(() -> {
-                mVibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK));
+                vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK),
+                        ignoreSystemSettings);
             });
         }
+    }
+
+    // Must be called on the background thread.
+    @TargetApi(Build.VERSION_CODES.O)
+    private void vibrate(final VibrationEffect effect, final boolean ignoreSystemSettings) {
+        if (!ignoreSystemSettings) {
+            mVibrator.vibrate(effect);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Alarm vibrations are not affected by the touch feedback setting, silent ringer
+            // mode, Do Not Disturb (when alarms are allowed) or battery saver.
+            // FLAG_BYPASS_INTERRUPTION_POLICY is silently dropped unless the app holds a
+            // privileged permission, but it costs nothing to ask.
+            mVibrator.vibrate(effect, new VibrationAttributes.Builder()
+                    .setUsage(VibrationAttributes.USAGE_ALARM)
+                    .setFlags(VibrationAttributes.FLAG_BYPASS_INTERRUPTION_POLICY,
+                            VibrationAttributes.FLAG_BYPASS_INTERRUPTION_POLICY)
+                    .build());
+        } else {
+            mVibrator.vibrate(effect, getBypassAudioAttributes());
+        }
+    }
+
+    private static AudioAttributes getBypassAudioAttributes() {
+        return new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ALARM)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build();
     }
 
     public void onSettingsChanged(final SettingsValues settingsValues) {

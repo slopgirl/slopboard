@@ -57,6 +57,9 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
     public static final String PREF_ENABLED_SUBTYPES = "pref_enabled_subtypes";
     public static final String PREF_KEYPRESS_SOUND_VOLUME = "pref_keypress_sound_volume";
     public static final String PREF_KEY_LONGPRESS_TIMEOUT = "pref_key_longpress_timeout";
+    public static final String PREF_VIBRATION_DURATION = "pref_vibration_duration";
+    public static final String PREF_VIBRATION_IGNORE_SYSTEM_SETTINGS =
+            "pref_vibration_ignore_system_settings";
     public static final String PREF_KEYBOARD_HEIGHT = "pref_keyboard_height";
     public static final String PREF_BOTTOM_OFFSET_PORTRAIT = "pref_bottom_offset_portrait";
     public static final String PREF_KEYBOARD_COLOR = "pref_keyboard_color";
@@ -154,6 +157,7 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
                     case PREF_DELETE_SWIPE:
                     case PREF_SPACE_SWIPE:
                     case PREF_VIBRATE_ON:
+                    case PREF_VIBRATION_IGNORE_SYSTEM_SETTINGS:
                     case PREF_SOUND_ON:
                     case PREF_POPUP_ON:
                         Log.i(TAG, "Loading restriction: " + key + "=" + appRestrictions.getBoolean(key));
@@ -165,6 +169,7 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
                         prefsEditor.putFloat(key, appRestrictions.getInt(key) / 100f);
                         break;
                     case PREF_KEY_LONGPRESS_TIMEOUT:
+                    case PREF_VIBRATION_DURATION:
                     case PREF_BOTTOM_OFFSET_PORTRAIT:
                         Log.i(TAG, "Loading restriction: " + key + "=" + appRestrictions.getInt(key));
                         prefsEditor.putInt(key, appRestrictions.getInt(key));
@@ -214,6 +219,22 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
         final boolean hasVibrator = AudioAndHapticFeedbackManager.getInstance().hasVibrator();
         return hasVibrator && prefs.getBoolean(PREF_VIBRATE_ON,
                 res.getBoolean(R.bool.config_default_vibration_enabled));
+    }
+
+    public static boolean readVibrationIgnoreSystemSettings(final SharedPreferences prefs,
+            final Resources res) {
+        return prefs.getBoolean(PREF_VIBRATION_IGNORE_SYSTEM_SETTINGS,
+                res.getBoolean(R.bool.config_default_vibration_ignore_system_settings));
+    }
+
+    // Returns the keypress vibration duration in milliseconds, or -1 for the system default
+    // haptic click effect.
+    public static int readVibrationDuration(final SharedPreferences prefs) {
+        return prefs.getInt(PREF_VIBRATION_DURATION, UNDEFINED_PREFERENCE_VALUE_INT);
+    }
+
+    public static int readDefaultVibrationDuration() {
+        return UNDEFINED_PREFERENCE_VALUE_INT;
     }
 
     public static boolean readKeyPreviewPopupEnabled(final SharedPreferences prefs,
