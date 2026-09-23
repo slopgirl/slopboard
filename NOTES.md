@@ -11,6 +11,8 @@ CHANGELOG.md.
 - applicationId `dev.macroslop.slopboard`, debug `dev.macroslop.slopboard.debug` (label
   "slopboard debug" from app/src/debug/res). The Java namespace stays
   `rkr.simplekeyboard.inputmethod` on purpose, to keep upstream merges easy.
+  Gotcha: resources are packaged under the applicationId, so `getIdentifier` must use
+  `res.getResourcePackageName(<known R id>)`, never `R.class.getPackage()` (crashed settings).
 - The user's phone also has upstream Simple Keyboard from F-Droid (rkr.simplekeyboard.inputmethod);
   don't touch it.
 
