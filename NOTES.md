@@ -64,6 +64,12 @@ CHANGELOG.md.
   EmojiPanelView sets the column count to keep cells no wider than that bitmap. It hides emoji
   the device font can't render (UnicodeRenderableManager), unless EmojiCompat is loaded.
 
+- Emoji preview bubble: EmojiPanelView#dispatchTouchEvent finds the androidx EmojiView under
+  the finger and adds a TextView to the IME window's android.R.id.content (like the key
+  previews). The emoji is read by reflection (EmojiViewAccess), so proguard-rules.pro keeps
+  EmojiView#getEmoji. The bubble hides past touch slop (scroll) and on up/cancel. The long-press
+  variants popup is its own window and covers the bubble.
+
 ## Keyboard height handle
 - Settings#addPreviewListener: LatinIME reloads the keyboard for height/bottom offset previews,
   and shows KeyboardResizeHandleView (layout/keyboard_resize_handle.xml, in both input_view

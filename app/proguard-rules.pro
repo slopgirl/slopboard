@@ -20,3 +20,8 @@
 -keep class rkr.simplekeyboard.inputmethod.latin.settings.SettingsFragment
 -keep class rkr.simplekeyboard.inputmethod.latin.settings.LanguagesSettingsFragment
 -keep class rkr.simplekeyboard.inputmethod.latin.settings.SingleLanguageSettingsFragment
+# The emoji preview bubble reads the emoji off androidx's internal EmojiView by reflection
+# (keyboard/EmojiViewAccess.java).
+-keep class androidx.emoji2.emojipicker.EmojiView {
+    public java.lang.CharSequence getEmoji();
+}

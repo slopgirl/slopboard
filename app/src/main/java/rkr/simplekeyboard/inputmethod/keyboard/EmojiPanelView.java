@@ -19,14 +19,21 @@ package rkr.simplekeyboard.inputmethod.keyboard;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.emoji2.emojipicker.EmojiPickerView;
 
@@ -45,6 +52,10 @@ public final class EmojiPanelView extends LinearLayout {
     // grid cell (see androidx EmojiView), so cells wider than the bitmap make emoji blurry.
     private static final float PICKER_EMOJI_TEXT_SIZE_SP = 30;
 
+    // Emoji preview bubble: a multiple of the grid cell, drawn above the held emoji.
+    private static final float BUBBLE_SIZE_TO_CELL = 1.8f;
+    private static final float BUBBLE_TEXT_TO_CELL = 1.1f;
+
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final int mRepeatStartTimeout;
     private final int mRepeatInterval;
@@ -52,6 +63,14 @@ public final class EmojiPanelView extends LinearLayout {
     private KeyboardActionListener mListener = KeyboardActionListener.EMPTY_LISTENER;
     private Runnable mOnBackToLetters;
     private int mDeleteRepeatCount;
+
+    private TextView mBubble;
+    private boolean mTrackingEmoji;
+    private float mDownRawX;
+    private float mDownRawY;
+    private final int mTouchSlop;
+    private final int[] mLocation = new int[2];
+    private final Rect mRect = new Rect();
 
     private final Runnable mDeleteRepeat = new Runnable() {
         @Override
@@ -67,6 +86,7 @@ public final class EmojiPanelView extends LinearLayout {
         mRepeatStartTimeout = context.getResources().getInteger(
                 R.integer.config_key_repeat_start_timeout);
         mRepeatInterval = context.getResources().getInteger(R.integer.config_key_repeat_interval);
+        mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
     public void setListeners(final KeyboardActionListener listener,
@@ -110,6 +130,109 @@ public final class EmojiPanelView extends LinearLayout {
         });
     }
 
+    @Override
+    public boolean dispatchTouchEvent(final MotionEvent event) {
+        trackEmojiUnderFinger(event);
+        return super.dispatchTouchEvent(event);
+    }
+
+    // Shows the emoji under the finger in a bubble while it's held; a scroll or lifting the
+    // finger hides it. The picker's own variants popup (long press) is a separate window above.
+    private void trackEmojiUnderFinger(final MotionEvent event) {
+        switch (event.getActionMasked()) {
+        case MotionEvent.ACTION_DOWN:
+            mDownRawX = event.getRawX();
+            mDownRawY = event.getRawY();
+            final View emojiView = findEmojiViewAt(this, (int) mDownRawX, (int) mDownRawY);
+            mTrackingEmoji = emojiView != null && showBubble(emojiView);
+            break;
+        case MotionEvent.ACTION_MOVE:
+            if (mTrackingEmoji && (Math.abs(event.getRawX() - mDownRawX) > mTouchSlop
+                    || Math.abs(event.getRawY() - mDownRawY) > mTouchSlop)) {
+                mTrackingEmoji = false;
+                hideBubble();
+            }
+            break;
+        case MotionEvent.ACTION_UP:
+        case MotionEvent.ACTION_CANCEL:
+            mTrackingEmoji = false;
+            hideBubble();
+            break;
+        default:
+            break;
+        }
+    }
+
+    private View findEmojiViewAt(final View view, final int rawX, final int rawY) {
+        if (view.getVisibility() != View.VISIBLE || !view.getGlobalVisibleRect(mRect)
+                || !mRect.contains(rawX, rawY)) {
+            return null;
+        }
+        if (EmojiViewAccess.isEmojiView(view)) {
+            return view;
+        }
+        if (view instanceof ViewGroup) {
+            final ViewGroup group = (ViewGroup) view;
+            for (int i = group.getChildCount() - 1; i >= 0; i--) {
+                final View found = findEmojiViewAt(group.getChildAt(i), rawX, rawY);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean showBubble(final View emojiView) {
+        final CharSequence emoji = EmojiViewAccess.getEmoji(emojiView);
+        final ViewGroup windowContent = getRootView().findViewById(android.R.id.content);
+        if (emoji == null || windowContent == null) {
+            return false;
+        }
+        if (mBubble == null) {
+            mBubble = new TextView(getContext());
+            mBubble.setGravity(Gravity.CENTER);
+            mBubble.setIncludeFontPadding(false);
+        }
+        if (mBubble.getParent() != windowContent) {
+            if (mBubble.getParent() != null) {
+                ((ViewGroup) mBubble.getParent()).removeView(mBubble);
+            }
+            windowContent.addView(mBubble);
+        }
+        final int cell = emojiView.getWidth();
+        final int size = Math.round(cell * BUBBLE_SIZE_TO_CELL);
+        mBubble.setLayoutParams(new FrameLayout.LayoutParams(size, size));
+        mBubble.setTextSize(TypedValue.COMPLEX_UNIT_PX, cell * BUBBLE_TEXT_TO_CELL);
+        mBubble.setText(emoji);
+        final Drawable background = getContext().getDrawable(
+                R.drawable.keyboard_key_feedback_background).mutate();
+        if (getBackground() != null) {
+            // Follows a custom keyboard color like the key previews do.
+            background.setColorFilter(getBackground().getColorFilter());
+        }
+        mBubble.setBackground(background);
+
+        // Centered above the emoji, kept inside the window horizontally.
+        windowContent.getLocationOnScreen(mLocation);
+        final int contentX = mLocation[0];
+        final int contentY = mLocation[1];
+        emojiView.getLocationOnScreen(mLocation);
+        final int x = mLocation[0] - contentX + (cell - size) / 2;
+        final int y = mLocation[1] - contentY - size;
+        mBubble.setTranslationX(Math.max(0, Math.min(windowContent.getWidth() - size, x)));
+        mBubble.setTranslationY(Math.max(0, y));
+        mBubble.setVisibility(View.VISIBLE);
+        mBubble.bringToFront();
+        return true;
+    }
+
+    private void hideBubble() {
+        if (mBubble != null) {
+            mBubble.setVisibility(View.GONE);
+        }
+    }
+
     // The fewest grid columns whose cells are no wider than the picker's emoji bitmaps.
     private int getSharpColumnCount() {
         final TextPaint paint = new TextPaint();
@@ -146,6 +269,8 @@ public final class EmojiPanelView extends LinearLayout {
 
     public void hide() {
         mHandler.removeCallbacks(mDeleteRepeat);
+        mTrackingEmoji = false;
+        hideBubble();
         setVisibility(View.GONE);
     }
 
