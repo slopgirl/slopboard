@@ -17,6 +17,7 @@ CHANGELOG.md.
   don't touch it.
 
 ## Build
+- Only the release APK goes on the user's phone (`just install`); never install debug.
 - `./gradlew` is broken (upstream is missing `gradle/wrapper/gradle-wrapper.jar`); use Homebrew
   `gradle` through the justfile.
 - Needs `local.properties` with `sdk.dir=...` (gitignored).

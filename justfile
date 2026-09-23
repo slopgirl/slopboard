@@ -15,12 +15,8 @@ release:
 # Build debug and release APKs
 build: debug release
 
-# Install the debug APK on the connected device
-install: debug
-    adb install -r app/build/outputs/apk/debug/app-debug.apk
-
-# Install the release APK on the connected device
-install-release: release
+# Install the release APK on the connected device (never install debug builds)
+install: release
     adb install -r app/build/outputs/apk/release/app-release.apk
 
 # Print the signing certificate of the release APK
