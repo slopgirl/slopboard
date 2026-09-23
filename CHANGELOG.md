@@ -17,8 +17,9 @@ Based on upstream 6.7 (versionCode 148).
   height live and shows a drag handle on top to resize it directly; the slider follows. The
   bottom offset dialog previews live too, and both dialogs have a test field.
 - Keypress sound styles: System (as before), Soft tap, Click, Typewriter, Mechanical and Bubble,
-  under Key press settings. Picking one plays a preview. The sounds are synthesized by
-  `tools/keysounds.py` (`just sounds`), about 230 KB in total.
+  under Key press settings. Picking one plays a preview. The sounds are synthesized on the
+  device, so they have settings: pitch (±12 semitones), length (50–200%), tone (darker to
+  brighter) and a random pitch variation per keypress.
 - Emoji key next to the space bar (can be turned off under Preferences). It opens an emoji panel
   (Android's emoji picker, with categories and recently used emoji) with an ABC key back to the
   letters and a delete key. The panel is up to 1.5x the keyboard's height (at most 60% of the

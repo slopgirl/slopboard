@@ -28,6 +28,7 @@ import java.util.Map;
 
 import rkr.simplekeyboard.inputmethod.R;
 import rkr.simplekeyboard.inputmethod.latin.InputAttributes;
+import rkr.simplekeyboard.inputmethod.latin.KeySoundSynth;
 
 // Non-final for testing via mock library.
 public class SettingsValues {
@@ -61,6 +62,9 @@ public class SettingsValues {
     // Deduced settings
     public final float mKeypressSoundVolume;
     public final String mKeypressSoundStyle;
+    // Null for the system sounds.
+    public final KeySoundSynth.Config mKeypressSoundConfig;
+    public final int mKeypressSoundVariation;
     public final int mKeyPreviewPopupDismissDelay;
 
     // Debug settings
@@ -96,6 +100,12 @@ public class SettingsValues {
         mKeypressSoundVolume = previewOr(previewValues, Settings.PREF_KEYPRESS_SOUND_VOLUME,
                 Settings.readKeypressSoundVolume(prefs));
         mKeypressSoundStyle = Settings.readKeypressSoundStyle(prefs, res);
+        mKeypressSoundConfig = Settings.createKeypressSoundConfig(mKeypressSoundStyle,
+                readSoundInt(prefs, previewValues, Settings.PREF_KEYPRESS_SOUND_PITCH),
+                readSoundInt(prefs, previewValues, Settings.PREF_KEYPRESS_SOUND_LENGTH),
+                readSoundInt(prefs, previewValues, Settings.PREF_KEYPRESS_SOUND_TONE));
+        mKeypressSoundVariation =
+                readSoundInt(prefs, previewValues, Settings.PREF_KEYPRESS_SOUND_VARIATION);
         mKeyPreviewPopupDismissDelay = res.getInteger(R.integer.config_key_preview_linger_timeout);
         mKeyboardHeightScale = previewOr(previewValues, Settings.PREF_KEYBOARD_HEIGHT,
                 Settings.readKeyboardHeight(prefs, DEFAULT_SIZE_SCALE));
@@ -106,6 +116,11 @@ public class SettingsValues {
         mShowNumberRow = Settings.readShowNumberRow(prefs);
         mSpaceSwipeEnabled = Settings.readSpaceSwipeEnabled(prefs);
         mDeleteSwipeEnabled = Settings.readDeleteSwipeEnabled(prefs);
+    }
+
+    private static int readSoundInt(final SharedPreferences prefs,
+            final Map<String, Object> previewValues, final String key) {
+        return previewOr(previewValues, key, Settings.readKeypressSoundInt(prefs, key));
     }
 
     // Returns the unsaved preview value for key if there is one (see Settings#setPreviewValue).

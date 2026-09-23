@@ -116,6 +116,15 @@
     <string name="keypress_sound_style_typewriter">Typewriter</string>
     <string name="keypress_sound_style_mechanical">Mechanical</string>
     <string name="keypress_sound_style_bubble">Bubble</string>
+    <!-- Settings of the synthesized keypress sounds (all styles but System) -->
+    <string name="prefs_keypress_sound_pitch">Sound pitch</string>
+    <string name="prefs_keypress_sound_length">Sound length</string>
+    <string name="prefs_keypress_sound_tone">Sound tone</string>
+    <string name="prefs_keypress_sound_variation">Pitch variation per keypress</string>
+    <string name="keypress_sound_pitch_value">%+d semitones</string>
+    <string name="keypress_sound_tone_neutral">Neutral</string>
+    <string name="keypress_sound_tone_darker">Darker (%d)</string>
+    <string name="keypress_sound_tone_brighter">Brighter (+%d)</string>
     <!-- Hint of the text field in key press settings for trying the keyboard -->
     <string name="settings_test_field_hint">Type here to test</string>
 

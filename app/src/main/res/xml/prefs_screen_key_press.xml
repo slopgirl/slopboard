@@ -55,6 +55,35 @@
         android:entries="@array/keypress_sound_style_names"
         android:entryValues="@array/keypress_sound_style_values"
         android:defaultValue="@string/config_default_keypress_sound_style" />
+    <rkr.simplekeyboard.inputmethod.latin.settings.SeekBarDialogPreference
+        android:key="pref_keypress_sound_pitch"
+        android:title="@string/prefs_keypress_sound_pitch"
+        android:dependency="sound_on"
+        latin:minValue="@integer/config_min_keypress_sound_pitch"
+        latin:maxValue="@integer/config_max_keypress_sound_pitch"
+        latin:showTestField="true" />
+    <rkr.simplekeyboard.inputmethod.latin.settings.SeekBarDialogPreference
+        android:key="pref_keypress_sound_length"
+        android:title="@string/prefs_keypress_sound_length"
+        android:dependency="sound_on"
+        latin:minValue="@integer/config_min_keypress_sound_length"
+        latin:maxValue="@integer/config_max_keypress_sound_length"
+        latin:stepValue="@integer/config_keypress_sound_length_step"
+        latin:showTestField="true" />
+    <rkr.simplekeyboard.inputmethod.latin.settings.SeekBarDialogPreference
+        android:key="pref_keypress_sound_tone"
+        android:title="@string/prefs_keypress_sound_tone"
+        android:dependency="sound_on"
+        latin:minValue="@integer/config_min_keypress_sound_tone"
+        latin:maxValue="@integer/config_max_keypress_sound_tone"
+        latin:showTestField="true" />
+    <rkr.simplekeyboard.inputmethod.latin.settings.SeekBarDialogPreference
+        android:key="pref_keypress_sound_variation"
+        android:title="@string/prefs_keypress_sound_variation"
+        android:dependency="sound_on"
+        latin:maxValue="@integer/config_max_keypress_sound_variation"
+        latin:stepValue="@integer/config_keypress_sound_variation_step"
+        latin:showTestField="true" />
     <SwitchPreference
         android:key="popup_on"
         android:title="@string/popup_on_keypress"

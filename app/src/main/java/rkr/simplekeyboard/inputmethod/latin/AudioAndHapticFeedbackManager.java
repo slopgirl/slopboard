@@ -26,15 +26,17 @@ import android.os.Build;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import rkr.simplekeyboard.inputmethod.R;
 import rkr.simplekeyboard.inputmethod.latin.common.Constants;
-import rkr.simplekeyboard.inputmethod.latin.settings.Settings;
 import rkr.simplekeyboard.inputmethod.latin.settings.SettingsValues;
 
 /**
@@ -44,6 +46,7 @@ import rkr.simplekeyboard.inputmethod.latin.settings.SettingsValues;
  * complexity of settings and the like.
  */
 public final class AudioAndHapticFeedbackManager {
+    private static final String TAG = AudioAndHapticFeedbackManager.class.getSimpleName();
     private static final long TICK_FREQUENCY = 100;
     private static final long DEFAULT_LEGACY_VIBRATION_DURATION = 20;
     private ExecutorService mBackgroundThread;
@@ -54,20 +57,27 @@ public final class AudioAndHapticFeedbackManager {
     private boolean mSoundOn;
     private long mLastTickTime = 0;
 
-    // Keypress sound styles other than "system" play bundled res/raw/keysound_<style>_<kind>
-    // files (made by tools/keysounds.py) through a SoundPool. Only touched on mBackgroundThread.
+    // Keypress sound styles other than "system" are synthesized by KeySoundSynth into WAV files
+    // in the cache and played through a SoundPool. Only touched on mBackgroundThread.
     public static final String SOUND_STYLE_SYSTEM = "system";
+    // Indexed by KeySoundSynth kind.
     private static final int[] SOUND_EFFECTS = { AudioManager.FX_KEYPRESS_STANDARD,
             AudioManager.FX_KEYPRESS_DELETE, AudioManager.FX_KEYPRESS_RETURN,
             AudioManager.FX_KEYPRESS_SPACEBAR };
-    private static final String[] SOUND_KINDS = { "key", "delete", "enter", "space" };
-    // Volume for bundled sounds when the volume setting is "system default"; about -6 dB.
-    private static final float DEFAULT_BUNDLED_SOUND_VOLUME = 0.5f;
+    private static final String SOUND_CACHE_DIR = "keysounds";
+    // Volume for synthesized sounds when the volume setting is "system default"; about -6 dB.
+    private static final float DEFAULT_SYNTH_SOUND_VOLUME = 0.5f;
+    // Largest random pitch change per press at 100% variation, in semitones.
+    private static final float MAX_PITCH_VARIATION_SEMITONES = 1.5f;
     private Context mContext;
     private SoundPool mSoundPool;
-    private String mSoundStyle = SOUND_STYLE_SYSTEM;
-    private final int[] mSoundIds = new int[SOUND_KINDS.length];
+    // Null for the system style.
+    private KeySoundSynth.Config mSoundConfig;
+    private final int[] mSoundIds = new int[KeySoundSynth.KIND_COUNT];
+    private boolean mKeySoundLoaded;
     private float mPreviewVolumeOnLoad = Float.NaN;
+    private int mPreviewVariationOnLoad;
+    private final Random mVariationRandom = new Random();
 
     private static final AudioAndHapticFeedbackManager sInstance =
             new AudioAndHapticFeedbackManager();
@@ -127,10 +137,16 @@ public final class AudioAndHapticFeedbackManager {
             sound = AudioManager.FX_KEYPRESS_STANDARD;
             break;
         }
-        playSoundEffect(sound, mSettingsValues.mKeypressSoundVolume);
+        playSoundEffect(sound, mSettingsValues.mKeypressSoundVolume,
+                mSettingsValues.mKeypressSoundVariation);
     }
 
     public void playSoundEffect(final int effectType, final float volume) {
+        playSoundEffect(effectType, volume, 0);
+    }
+
+    private void playSoundEffect(final int effectType, final float volume,
+            final int variationPercent) {
         if (mAudioManager == null) {
             return;
         }
@@ -138,31 +154,42 @@ public final class AudioAndHapticFeedbackManager {
         mBackgroundThread.execute(() -> {
             final int soundId = getSoundId(effectType);
             if (soundId != 0) {
-                final float v = volume < 0 ? DEFAULT_BUNDLED_SOUND_VOLUME : volume;
-                mSoundPool.play(soundId, v, v, 1 /* priority */, 0 /* loop */, 1f /* rate */);
+                final float v = volume < 0 ? DEFAULT_SYNTH_SOUND_VOLUME : volume;
+                final float semitones = (mVariationRandom.nextFloat() * 2 - 1)
+                        * MAX_PITCH_VARIATION_SEMITONES * variationPercent / 100f;
+                final float rate = (float) Math.pow(2, semitones / 12.0);
+                mSoundPool.play(soundId, v, v, 1 /* priority */, 0 /* loop */, rate);
             } else {
                 mAudioManager.playSoundEffect(effectType, volume);
             }
         });
     }
 
-    /** Switches to a keypress sound style, then plays its key sound once it has loaded. */
-    public void previewSoundStyle(final String style, final float volume) {
+    /** Switches to the given sounds (null: system) in the background. */
+    public void setSoundConfig(final KeySoundSynth.Config config) {
+        if (mBackgroundThread != null) {
+            mBackgroundThread.execute(() -> loadSounds(config));
+        }
+    }
+
+    /**
+     * Switches to the given sounds (null: system) and plays their key sound, once it's ready.
+     * Used by the settings to let the user hear a change.
+     */
+    public void previewSound(final KeySoundSynth.Config config, final float volume,
+            final int variationPercent) {
         if (mBackgroundThread == null) {
             return;
         }
         mBackgroundThread.execute(() -> {
-            if (style.equals(mSoundStyle) && mSoundPool != null) {
+            loadSounds(config);
+            if (config == null || mKeySoundLoaded) {
                 mPreviewVolumeOnLoad = Float.NaN;
-                playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD, volume);
-                return;
-            }
-            mPreviewVolumeOnLoad = volume;
-            loadSoundStyle(style);
-            if (mSoundPool == null) {
-                // The system style has nothing to load.
-                mPreviewVolumeOnLoad = Float.NaN;
-                playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD, volume);
+                playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD, volume, variationPercent);
+            } else {
+                // Played by the load listener.
+                mPreviewVolumeOnLoad = volume;
+                mPreviewVariationOnLoad = variationPercent;
             }
         });
     }
@@ -181,17 +208,33 @@ public final class AudioAndHapticFeedbackManager {
     }
 
     // Must be called on the background thread.
-    private void loadSoundStyle(final String style) {
-        if (style.equals(mSoundStyle)) {
+    private void loadSounds(final KeySoundSynth.Config config) {
+        if (config == null ? mSoundConfig == null : config.equals(mSoundConfig)) {
             return;
         }
-        mSoundStyle = style;
+        mSoundConfig = config;
+        mKeySoundLoaded = false;
         if (mSoundPool != null) {
             mSoundPool.release();
             mSoundPool = null;
         }
-        if (SOUND_STYLE_SYSTEM.equals(style) || mContext == null) {
+        if (config == null || mContext == null) {
             return;
+        }
+        final File dir = new File(mContext.getCacheDir(), SOUND_CACHE_DIR);
+        if (!dir.isDirectory() && !dir.mkdirs()) {
+            Log.w(TAG, "Cannot create " + dir);
+            return;
+        }
+        // Only the current sounds are kept.
+        final String prefix = config.getKey() + "_";
+        final File[] oldFiles = dir.listFiles();
+        if (oldFiles != null) {
+            for (final File file : oldFiles) {
+                if (!file.getName().startsWith(prefix)) {
+                    file.delete();
+                }
+            }
         }
         final SoundPool soundPool = new SoundPool.Builder()
                 .setMaxStreams(4)
@@ -200,25 +243,32 @@ public final class AudioAndHapticFeedbackManager {
                         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                         .build())
                 .build();
-        // Resources live under the applicationId, which differs from R's Java package.
-        final String resourcePackage = mContext.getResources().getResourcePackageName(
-                R.raw.keysound_click_key);
-        final int keySoundIndex = 0;
         soundPool.setOnLoadCompleteListener((pool, sampleId, status) -> mBackgroundThread.execute(
                 () -> {
-                    if (pool == mSoundPool && sampleId == mSoundIds[keySoundIndex]
-                            && !Float.isNaN(mPreviewVolumeOnLoad)) {
+                    if (pool != mSoundPool || sampleId != mSoundIds[KeySoundSynth.KIND_KEY]) {
+                        return;
+                    }
+                    mKeySoundLoaded = true;
+                    if (!Float.isNaN(mPreviewVolumeOnLoad)) {
                         final float volume = mPreviewVolumeOnLoad;
                         mPreviewVolumeOnLoad = Float.NaN;
-                        playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD, volume);
+                        playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD, volume,
+                                mPreviewVariationOnLoad);
                     }
                 }));
-        for (int i = 0; i < SOUND_KINDS.length; i++) {
-            final int resId = mContext.getResources().getIdentifier(
-                    "keysound_" + style + "_" + SOUND_KINDS[i], "raw", resourcePackage);
-            mSoundIds[i] = resId != 0 ? soundPool.load(mContext, resId, 1) : 0;
-        }
         mSoundPool = soundPool;
+        for (int kind = 0; kind < KeySoundSynth.KIND_COUNT; kind++) {
+            final File file = new File(dir, prefix + kind + ".wav");
+            try {
+                if (!file.exists()) {
+                    KeySoundSynth.renderToWav(config, kind, file);
+                }
+                mSoundIds[kind] = soundPool.load(file.getPath(), 1);
+            } catch (final IOException e) {
+                Log.w(TAG, "Cannot write " + file, e);
+                mSoundIds[kind] = 0;
+            }
+        }
     }
 
     public void performHapticFeedback(final View viewToPerformHapticFeedbackOn) {
@@ -320,14 +370,7 @@ public final class AudioAndHapticFeedbackManager {
     public void onSettingsChanged(final SettingsValues settingsValues) {
         mSettingsValues = settingsValues;
         mSoundOn = reevaluateIfSoundIsOn();
-        setSoundStyle(settingsValues.mKeypressSoundStyle);
-    }
-
-    /** Loads a keypress sound style (see keypress-sound-styles.xml). */
-    public void setSoundStyle(final String style) {
-        if (mBackgroundThread != null) {
-            mBackgroundThread.execute(() -> loadSoundStyle(style));
-        }
+        setSoundConfig(settingsValues.mKeypressSoundConfig);
     }
 
     public void onRingerModeChanged() {

@@ -81,18 +81,21 @@ CHANGELOG.md.
   KeyboardSwitcher). onComputeInsets adds its height to the touchable/visible area.
 
 ## Keypress sound styles
-- `pref_keypress_sound_style` (ListPreference, default "system"). Values and names are in
-  res/values/keypress-sound-styles.xml.
-- Non-system styles play res/raw/keysound_<style>_<kind>.wav (kind: key/delete/enter/space)
-  through a SoundPool in AudioAndHapticFeedbackManager (USAGE_ASSISTANCE_SONIFICATION, so the
-  system stream). All SoundPool use is on the manager's single background thread. Files are
-  looked up by name, so res/raw/keep.xml keeps them. In the release APK their paths are shortened
-  (res/XX.wav), but the names in the resource table stay.
-- The sounds come from `tools/keysounds.py`: pure Python synthesis, seeded, so it's reproducible.
-  `just sounds` regenerates them and `just sounds-play` plays them on the Mac. To add a style,
-  add a function there and add it to the arrays.
-- "System default" volume plays bundled sounds at 0.5 (about -6 dB); the system style keeps
+- `pref_keypress_sound_style` (ListPreference, default "system"). Values and names, plus the
+  ranges of the sound settings, are in res/values/keypress-sound-styles.xml.
+- Non-system styles are synthesized on the device by `KeySoundSynth` (plain Java, no Android
+  deps, so it can be run on the desktop JVM to check output). `KeySoundSynth.Config` = style +
+  pitch/length/tone: the pitch scales all frequencies, the length all durations and time
+  constants, and the tone the filter cutoffs. Rendered to cacheDir/keysounds/<config>_<kind>.wav
+  (old configs are deleted) and played through a SoundPool (USAGE_ASSISTANCE_SONIFICATION). All
+  SoundPool use is on the manager's single background thread.
+- Pitch variation isn't rendered: it's a random SoundPool playback rate per press (up to ±1.5
+  semitones at 100%).
+- Settings dialogs preview through `AudioAndHapticFeedbackManager#previewSound(config, ...)`,
+  which plays once the new key sound has loaded (SoundPool loads async).
+- "System default" volume plays synthesized sounds at 0.5 (about -6 dB); the system style keeps
   AudioManager#playSoundEffect.
+- History: sounds were first rendered offline by tools/keysounds.py into res/raw (removed).
 
 ## Settings test fields
 - Settings activity and IME share a process, so settings can talk to the running keyboard

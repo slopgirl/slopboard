@@ -43,6 +43,7 @@ import rkr.simplekeyboard.inputmethod.compat.PreferenceManagerCompat;
 import rkr.simplekeyboard.inputmethod.keyboard.KeyboardTheme;
 import rkr.simplekeyboard.inputmethod.latin.AudioAndHapticFeedbackManager;
 import rkr.simplekeyboard.inputmethod.latin.InputAttributes;
+import rkr.simplekeyboard.inputmethod.latin.KeySoundSynth;
 import rkr.simplekeyboard.inputmethod.latin.RichInputMethodManager;
 
 public final class Settings extends BroadcastReceiver implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -62,6 +63,10 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
     public static final String PREF_ENABLED_SUBTYPES = "pref_enabled_subtypes";
     public static final String PREF_KEYPRESS_SOUND_VOLUME = "pref_keypress_sound_volume";
     public static final String PREF_KEYPRESS_SOUND_STYLE = "pref_keypress_sound_style";
+    public static final String PREF_KEYPRESS_SOUND_PITCH = "pref_keypress_sound_pitch";
+    public static final String PREF_KEYPRESS_SOUND_LENGTH = "pref_keypress_sound_length";
+    public static final String PREF_KEYPRESS_SOUND_TONE = "pref_keypress_sound_tone";
+    public static final String PREF_KEYPRESS_SOUND_VARIATION = "pref_keypress_sound_variation";
     public static final String PREF_KEY_LONGPRESS_TIMEOUT = "pref_key_longpress_timeout";
     public static final String PREF_VIBRATION_DURATION = "pref_vibration_duration";
     public static final String PREF_VIBRATION_IGNORE_SYSTEM_SETTINGS =
@@ -336,6 +341,36 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
             final Resources res) {
         return prefs.getString(PREF_KEYPRESS_SOUND_STYLE,
                 res.getString(R.string.config_default_keypress_sound_style));
+    }
+
+    /** Reads an int setting of the synthesized sounds (pitch, length, tone, variation). */
+    public static int readKeypressSoundInt(final SharedPreferences prefs, final String key) {
+        return prefs.getInt(key, readDefaultKeypressSoundInt(key));
+    }
+
+    public static int readDefaultKeypressSoundInt(final String key) {
+        return PREF_KEYPRESS_SOUND_LENGTH.equals(key) ? 100 : 0;
+    }
+
+    /** The sounds to synthesize, or null for the system style. */
+    public static KeySoundSynth.Config createKeypressSoundConfig(final String style,
+            final int pitch, final int length, final int tone) {
+        return KeySoundSynth.hasStyle(style)
+                ? new KeySoundSynth.Config(style, pitch, length, tone) : null;
+    }
+
+    /** The saved sound settings, with {@code key} (may be null) set to {@code value}. */
+    public static KeySoundSynth.Config readKeypressSoundConfig(final SharedPreferences prefs,
+            final Resources res, final String key, final Object value) {
+        return createKeypressSoundConfig(
+                PREF_KEYPRESS_SOUND_STYLE.equals(key) ? (String) value
+                        : readKeypressSoundStyle(prefs, res),
+                PREF_KEYPRESS_SOUND_PITCH.equals(key) ? (Integer) value
+                        : readKeypressSoundInt(prefs, PREF_KEYPRESS_SOUND_PITCH),
+                PREF_KEYPRESS_SOUND_LENGTH.equals(key) ? (Integer) value
+                        : readKeypressSoundInt(prefs, PREF_KEYPRESS_SOUND_LENGTH),
+                PREF_KEYPRESS_SOUND_TONE.equals(key) ? (Integer) value
+                        : readKeypressSoundInt(prefs, PREF_KEYPRESS_SOUND_TONE));
     }
 
     public static float readKeypressSoundVolume(final SharedPreferences prefs) {

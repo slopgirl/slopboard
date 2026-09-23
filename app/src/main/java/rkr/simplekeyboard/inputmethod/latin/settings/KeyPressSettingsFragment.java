@@ -31,6 +31,7 @@ import android.widget.LinearLayout;
 
 import rkr.simplekeyboard.inputmethod.R;
 import rkr.simplekeyboard.inputmethod.latin.AudioAndHapticFeedbackManager;
+import rkr.simplekeyboard.inputmethod.latin.KeySoundSynth;
 
 /**
  * "Preferences" settings sub screen.
@@ -41,7 +42,7 @@ import rkr.simplekeyboard.inputmethod.latin.AudioAndHapticFeedbackManager;
  * - Ignore system vibration settings
  * - Sound on keypress
  * - Keypress sound volume
- * - Keypress sound style
+ * - Keypress sound style, and the pitch, length, tone and variation of synthesized styles
  * - Popup on keypress
  * - Key long press delay
  *
@@ -197,15 +198,91 @@ public final class KeyPressSettingsFragment extends SubScreenFragment {
             return;
         }
         final SharedPreferences prefs = getSharedPreferences();
-        final AudioAndHapticFeedbackManager feedbackManager =
-                AudioAndHapticFeedbackManager.getInstance();
+        final Resources res = getResources();
         // Loaded here too, so the volume dialog plays the chosen style even when the keyboard
         // isn't running.
-        feedbackManager.setSoundStyle(Settings.readKeypressSoundStyle(prefs, getResources()));
+        AudioAndHapticFeedbackManager.getInstance().setSoundConfig(
+                Settings.readKeypressSoundConfig(prefs, res, null, null));
+        updateSynthSoundSettingsEnabled(Settings.readKeypressSoundStyle(prefs, res));
         pref.setOnPreferenceChangeListener((preference, newValue) -> {
-            feedbackManager.previewSoundStyle((String) newValue,
-                    Settings.readKeypressSoundVolume(prefs));
+            previewSound(Settings.PREF_KEYPRESS_SOUND_STYLE, newValue);
+            updateSynthSoundSettingsEnabled((String) newValue);
             return true;
+        });
+
+        setupSynthSoundSetting(Settings.PREF_KEYPRESS_SOUND_PITCH,
+                value -> res.getString(R.string.keypress_sound_pitch_value, value));
+        setupSynthSoundSetting(Settings.PREF_KEYPRESS_SOUND_LENGTH,
+                value -> res.getString(R.string.abbreviation_unit_percent, value));
+        setupSynthSoundSetting(Settings.PREF_KEYPRESS_SOUND_TONE, value -> value == 0
+                ? res.getString(R.string.keypress_sound_tone_neutral)
+                : res.getString(value < 0 ? R.string.keypress_sound_tone_darker
+                        : R.string.keypress_sound_tone_brighter, value));
+        setupSynthSoundSetting(Settings.PREF_KEYPRESS_SOUND_VARIATION,
+                value -> res.getString(R.string.abbreviation_unit_percent, value));
+    }
+
+    private static final String[] SYNTH_SOUND_SETTINGS = {
+            Settings.PREF_KEYPRESS_SOUND_PITCH, Settings.PREF_KEYPRESS_SOUND_LENGTH,
+            Settings.PREF_KEYPRESS_SOUND_TONE, Settings.PREF_KEYPRESS_SOUND_VARIATION };
+
+    // The pitch, length, tone and variation only apply to synthesized styles.
+    private void updateSynthSoundSettingsEnabled(final String style) {
+        for (final String key : SYNTH_SOUND_SETTINGS) {
+            setPreferenceEnabled(key, KeySoundSynth.hasStyle(style));
+        }
+    }
+
+    // Plays the key sound with the saved sound settings, but {@code key} set to {@code value}.
+    private void previewSound(final String key, final Object value) {
+        final SharedPreferences prefs = getSharedPreferences();
+        final int variation = Settings.PREF_KEYPRESS_SOUND_VARIATION.equals(key) ? (Integer) value
+                : Settings.readKeypressSoundInt(prefs, Settings.PREF_KEYPRESS_SOUND_VARIATION);
+        AudioAndHapticFeedbackManager.getInstance().previewSound(
+                Settings.readKeypressSoundConfig(prefs, getResources(), key, value),
+                Settings.readKeypressSoundVolume(prefs), variation);
+    }
+
+    private interface ValueText {
+        String get(int value);
+    }
+
+    private void setupSynthSoundSetting(final String key, final ValueText valueText) {
+        final SeekBarDialogPreference pref = (SeekBarDialogPreference) findPreference(key);
+        if (pref == null) {
+            return;
+        }
+        final SharedPreferences prefs = getSharedPreferences();
+        pref.setInterface(new SeekBarDialogPreference.ValueProxy() {
+            @Override
+            public void writeValue(final int value, final String key) {
+                prefs.edit().putInt(key, value).apply();
+            }
+
+            @Override
+            public void writeDefaultValue(final String key) {
+                prefs.edit().remove(key).apply();
+            }
+
+            @Override
+            public int readValue(final String key) {
+                return Settings.readKeypressSoundInt(prefs, key);
+            }
+
+            @Override
+            public int readDefaultValue(final String key) {
+                return Settings.readDefaultKeypressSoundInt(key);
+            }
+
+            @Override
+            public String getValueText(final int value) {
+                return valueText.get(value);
+            }
+
+            @Override
+            public void feedbackValue(final int value) {
+                previewSound(key, value);
+            }
         });
     }
 
