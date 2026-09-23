@@ -13,6 +13,9 @@ Based on upstream 6.7 (versionCode 148).
   app name "slopboard", so it installs alongside upstream Simple Keyboard.
 
 ### Added
+- Keypress sound styles: System (as before), Soft tap, Click, Typewriter, Mechanical and Bubble,
+  under Key press settings. Picking one plays a preview. The sounds are synthesized by
+  `tools/keysounds.py` (`just sounds`), about 230 KB in total.
 - Emoji key next to the space bar (can be turned off under Preferences). It opens an emoji panel
   (Android's emoji picker, with categories and recently used emoji) with an ABC key back to the
   letters and a delete key. The APK grows from about 0.6 MB to 1.6 MB.

@@ -47,6 +47,14 @@
         android:dependency="sound_on"
         latin:maxValue="100"
         latin:showTestField="true" /> <!-- percent -->
+    <ListPreference
+        android:key="pref_keypress_sound_style"
+        android:title="@string/prefs_keypress_sound_style"
+        android:summary="%s"
+        android:dependency="sound_on"
+        android:entries="@array/keypress_sound_style_names"
+        android:entryValues="@array/keypress_sound_style_values"
+        android:defaultValue="@string/config_default_keypress_sound_style" />
     <SwitchPreference
         android:key="popup_on"
         android:title="@string/popup_on_keypress"

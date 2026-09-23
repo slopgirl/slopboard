@@ -109,6 +109,13 @@
 
     <!-- Title of the button to revert to the default value of the device in the settings dialog [CHAR LIMIT=15] -->
     <string name="button_default">Default</string>
+    <string name="prefs_keypress_sound_style">Keypress sound style</string>
+    <string name="keypress_sound_style_system">System</string>
+    <string name="keypress_sound_style_soft">Soft tap</string>
+    <string name="keypress_sound_style_click">Click</string>
+    <string name="keypress_sound_style_typewriter">Typewriter</string>
+    <string name="keypress_sound_style_mechanical">Mechanical</string>
+    <string name="keypress_sound_style_bubble">Bubble</string>
     <!-- Hint of the text field in key press settings for trying the keyboard -->
     <string name="settings_test_field_hint">Type here to test</string>
 

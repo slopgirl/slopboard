@@ -23,6 +23,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +41,7 @@ import rkr.simplekeyboard.inputmethod.latin.AudioAndHapticFeedbackManager;
  * - Ignore system vibration settings
  * - Sound on keypress
  * - Keypress sound volume
+ * - Keypress sound style
  * - Popup on keypress
  * - Key long press delay
  *
@@ -66,6 +68,7 @@ public final class KeyPressSettingsFragment extends SubScreenFragment {
 
         setupKeypressVibrationDurationSettings();
         setupKeypressSoundVolumeSettings();
+        setupKeypressSoundStyleSettings();
         setupKeyLongpressTimeoutSettings();
     }
 
@@ -185,6 +188,24 @@ public final class KeyPressSettingsFragment extends SubScreenFragment {
             public Object getPreviewValue(final int value) {
                 return getValueFromPercentage(value);
             }
+        });
+    }
+
+    private void setupKeypressSoundStyleSettings() {
+        final Preference pref = findPreference(Settings.PREF_KEYPRESS_SOUND_STYLE);
+        if (pref == null) {
+            return;
+        }
+        final SharedPreferences prefs = getSharedPreferences();
+        final AudioAndHapticFeedbackManager feedbackManager =
+                AudioAndHapticFeedbackManager.getInstance();
+        // Loaded here too, so the volume dialog plays the chosen style even when the keyboard
+        // isn't running.
+        feedbackManager.setSoundStyle(Settings.readKeypressSoundStyle(prefs, getResources()));
+        pref.setOnPreferenceChangeListener((preference, newValue) -> {
+            feedbackManager.previewSoundStyle((String) newValue,
+                    Settings.readKeypressSoundVolume(prefs));
+            return true;
         });
     }
 

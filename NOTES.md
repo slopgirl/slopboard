@@ -60,6 +60,20 @@ CHANGELOG.md.
   is kept). `KeyboardSwitcher#getVisibleKeyboardView` returns the panel while it's shown, since
   LatinIME#onComputeInsets uses it for the touchable region. Closed on onFinishInputView.
 
+## Keypress sound styles
+- `pref_keypress_sound_style` (ListPreference, default "system"). Values and names are in
+  res/values/keypress-sound-styles.xml.
+- Non-system styles play res/raw/keysound_<style>_<kind>.wav (kind: key/delete/enter/space)
+  through a SoundPool in AudioAndHapticFeedbackManager (USAGE_ASSISTANCE_SONIFICATION, so the
+  system stream). All SoundPool use is on the manager's single background thread. Files are
+  looked up by name, so res/raw/keep.xml keeps them. In the release APK their paths are shortened
+  (res/XX.wav), but the names in the resource table stay.
+- The sounds come from `tools/keysounds.py`: pure Python synthesis, seeded, so it's reproducible.
+  `just sounds` regenerates them and `just sounds-play` plays them on the Mac. To add a style,
+  add a function there and add it to the arrays.
+- "System default" volume plays bundled sounds at 0.5 (about -6 dB); the system style keeps
+  AudioManager#playSoundEffect.
+
 ## Settings test fields
 - Settings activity and IME share a process, so settings can talk to the running keyboard
   directly.

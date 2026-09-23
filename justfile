@@ -23,6 +23,14 @@ install: release
 verify-release: release
     "$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/apksigner" verify --print-certs app/build/outputs/apk/release/app-release.apk 2>/dev/null
 
+# Regenerate the keypress sound styles in res/raw (tools/keysounds.py)
+sounds:
+    python3 tools/keysounds.py
+
+# Play every generated keypress sound on this computer
+sounds-play:
+    for f in app/src/main/res/raw/keysound_*.wav; do echo "$f"; afplay "$f"; sleep 0.3; done
+
 # Run Android lint (upstream already has failing checks)
 lint:
     gradle lintDebug

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The key sounds are looked up by name (AudioAndHapticFeedbackManager#loadSoundStyle), so keep
+     them if resource shrinking is ever enabled. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@raw/keysound_*" />

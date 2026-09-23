@@ -59,6 +59,7 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
     public static final String PREF_ENABLE_IME_SWITCH = "pref_enable_ime_switch";
     public static final String PREF_ENABLED_SUBTYPES = "pref_enabled_subtypes";
     public static final String PREF_KEYPRESS_SOUND_VOLUME = "pref_keypress_sound_volume";
+    public static final String PREF_KEYPRESS_SOUND_STYLE = "pref_keypress_sound_style";
     public static final String PREF_KEY_LONGPRESS_TIMEOUT = "pref_key_longpress_timeout";
     public static final String PREF_VIBRATION_DURATION = "pref_vibration_duration";
     public static final String PREF_VIBRATION_IGNORE_SYSTEM_SETTINGS =
@@ -306,6 +307,12 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
 
     public static void writePrefSubtypes(final SharedPreferences prefs, final String prefSubtypes) {
         prefs.edit().putString(PREF_ENABLED_SUBTYPES, prefSubtypes).apply();
+    }
+
+    public static String readKeypressSoundStyle(final SharedPreferences prefs,
+            final Resources res) {
+        return prefs.getString(PREF_KEYPRESS_SOUND_STYLE,
+                res.getString(R.string.config_default_keypress_sound_style));
     }
 
     public static float readKeypressSoundVolume(final SharedPreferences prefs) {
