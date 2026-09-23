@@ -8,7 +8,11 @@ CHANGELOG.md.
   Work happens on `slop`; local `master` mirrors upstream.
 - Commits are authored as slopgirl (identity set by ../gitconfig). Only rewrite our own
   commits, never upstream authors or history.
-- Package/applicationId is still `rkr.simplekeyboard.inputmethod` (renaming not decided yet).
+- applicationId `dev.macroslop.slopboard`, debug `dev.macroslop.slopboard.debug` (label
+  "slopboard debug" from app/src/debug/res). The Java namespace stays
+  `rkr.simplekeyboard.inputmethod` on purpose, to keep upstream merges easy.
+- The user's phone also has upstream Simple Keyboard from F-Droid (rkr.simplekeyboard.inputmethod);
+  don't touch it.
 
 ## Build
 - `./gradlew` is broken (upstream is missing `gradle/wrapper/gradle-wrapper.jar`); use Homebrew
@@ -22,8 +26,6 @@ CHANGELOG.md.
   store/key password `slopboard`. It's public, so don't use it to distribute builds.
 - For a real key create `keystore.properties` in the repo root (gitignored):
   `storeFile`, `storePassword`, `keyAlias`, `keyPassword` (storeFile relative to repo root).
-- Debug and release are signed with different keys but share the applicationId, so switching
-  between them on a device means uninstalling first.
 
 ## Vibration feature
 - `pref_vibration_duration` int: -1 = system default (EFFECT_CLICK), 0 = off, 1–100 ms one-shot.

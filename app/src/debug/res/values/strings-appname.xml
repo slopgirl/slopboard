@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds install next to release builds (applicationIdSuffix), so label them apart. -->
+<resources>
+    <string name="english_ime_name" translatable="false">slopboard debug</string>
+</resources>

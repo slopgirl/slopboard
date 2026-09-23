@@ -18,7 +18,9 @@ if (keystorePropsFile.exists()) {
 
 android {
     defaultConfig {
-        applicationId "rkr.simplekeyboard.inputmethod"
+        // Own applicationId so slopboard installs alongside upstream Simple Keyboard;
+        // the Java namespace stays rkr.simplekeyboard.inputmethod to ease upstream merges.
+        applicationId "dev.macroslop.slopboard"
         compileSdk 37
         minSdkVersion 24
         targetSdkVersion 37
@@ -34,6 +36,9 @@ android {
         }
     }
     buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+        }
         release {
             signingConfig signingConfigs.release
             minifyEnabled true
