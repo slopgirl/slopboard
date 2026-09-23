@@ -53,7 +53,9 @@ CHANGELOG.md.
 - KeyboardCodesSet `ID_TO_NAME` and `DEFAULT` must stay index-aligned. Upstream's are already off
   at the end (key_left/key_right have no codes); key_emoji was added right after
   key_language_switch.
-- Panel: EmojiPanelView in input_view.xml, over the MainKeyboardView. When shown it takes the
+- Panel: layout/emoji_panel.xml, included over the MainKeyboardView in BOTH layout/ and
+  layout-v28/input_view.xml (forgetting v28 crashed the keyboard on Android 9+). It copies the
+  keyboard view's padding (v28 fitsSystemWindows adds nav-bar padding). When shown it takes the
   keyboard's height and background, and the keyboard view goes INVISIBLE (not GONE, so the size
   is kept). `KeyboardSwitcher#getVisibleKeyboardView` returns the panel while it's shown, since
   LatinIME#onComputeInsets uses it for the touchable region. Closed on onFinishInputView.

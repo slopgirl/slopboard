@@ -32,43 +32,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
     <!-- Shown over the keyboard view by the emoji key; see EmojiPanelView#show. -->
-    <rkr.simplekeyboard.inputmethod.keyboard.EmojiPanelView
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/emoji_panel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:orientation="vertical"
-        android:visibility="gone"
-        tools:visibility="visible">
-        <androidx.emoji2.emojipicker.EmojiPickerView
-            android:id="@+id/emoji_panel_picker"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:orientation="horizontal">
-            <Button
-                android:id="@+id/emoji_panel_letters"
-                style="?android:attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:minWidth="72dp"
-                android:text="@string/emoji_panel_back_to_letters"
-                android:textColor="?attr/functionalTextColor" />
-            <View
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
-            <ImageButton
-                android:id="@+id/emoji_panel_delete"
-                style="?android:attr/borderlessButtonStyle"
-                android:layout_width="72dp"
-                android:layout_height="match_parent"
-                android:contentDescription="@string/emoji_panel_delete"
-                android:src="@drawable/sym_keyboard_delete" />
-        </LinearLayout>
-    </rkr.simplekeyboard.inputmethod.keyboard.EmojiPanelView>
+    <include layout="@layout/emoji_panel" />
 </rkr.simplekeyboard.inputmethod.latin.InputView>

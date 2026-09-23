@@ -107,9 +107,12 @@ public final class EmojiPanelView extends LinearLayout {
         mListener.onReleaseKey(Constants.CODE_DELETE, false);
     }
 
-    /** Shows the panel over the keyboard view, at the keyboard's size and background. */
+    /** Shows the panel over the keyboard view, with the keyboard's size, padding and background. */
     public void show(final View keyboardView) {
         getLayoutParams().height = keyboardView.getHeight();
+        // Same insets as the keyboard, which pads itself for the navigation bar on newer Android.
+        setPadding(keyboardView.getPaddingLeft(), keyboardView.getPaddingTop(),
+                keyboardView.getPaddingRight(), keyboardView.getPaddingBottom());
         final Drawable background = keyboardView.getBackground();
         if (background != null && background.getConstantState() != null) {
             final Drawable copy = background.getConstantState().newDrawable().mutate();
