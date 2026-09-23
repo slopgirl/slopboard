@@ -17,6 +17,7 @@
 
 package rkr.simplekeyboard.inputmethod.latin.utils;
 
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
@@ -90,5 +91,17 @@ public final class ViewLayoutUtils {
             throw new IllegalArgumentException("Layout parameter doesn't have gravity: "
                     + lp.getClass().getName());
         }
+    }
+
+    /** Gives {@code to} a copy of {@code from}'s background, including its color filter. */
+    public static void copyBackground(final View from, final View to) {
+        final Drawable background = from.getBackground();
+        if (background == null || background.getConstantState() == null) {
+            return;
+        }
+        final Drawable copy = background.getConstantState().newDrawable().mutate();
+        // The custom keyboard color is a color filter, which the constant state leaves out.
+        copy.setColorFilter(background.getColorFilter());
+        to.setBackground(copy);
     }
 }

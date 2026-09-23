@@ -30,7 +30,7 @@ import android.widget.TextView;
 import rkr.simplekeyboard.inputmethod.R;
 
 public final class SeekBarDialogPreference extends DialogPreference
-        implements SeekBar.OnSeekBarChangeListener {
+        implements SeekBar.OnSeekBarChangeListener, Settings.PreviewListener {
     public interface ValueProxy {
         int readValue(final String key);
         int readDefaultValue(final String key);
@@ -41,6 +41,10 @@ public final class SeekBarDialogPreference extends DialogPreference
         // The unsaved value as SettingsValues holds it, previewed in the dialog's test field.
         default Object getPreviewValue(final int value) {
             return value;
+        }
+        // Inverse of getPreviewValue, for previews set outside the dialog (the resize handle).
+        default int getValueFromPreview(final Object previewValue) {
+            return (Integer) previewValue;
         }
     }
 
@@ -56,6 +60,8 @@ public final class SeekBarDialogPreference extends DialogPreference
     private SeekBar mSeekBar;
 
     private ValueProxy mValueProxy;
+    // Set while the seek bar follows a preview value set elsewhere, so it isn't sent back.
+    private boolean mFollowingPreview;
 
     public SeekBarDialogPreference(final Context context, final AttributeSet attrs) {
         super(context, attrs);
@@ -130,6 +136,25 @@ public final class SeekBarDialogPreference extends DialogPreference
         final int value = mValueProxy.readValue(getKey());
         mValueView.setText(mValueProxy.getValueText(value));
         mSeekBar.setProgress(getProgressFromValue(clipValue(value)));
+        if (mShowTestField) {
+            // Previewing from the start tells the keyboard that this dialog is open, e.g. to show
+            // the resize handle for the keyboard height.
+            final Settings settings = Settings.getInstance();
+            settings.setPreviewValue(getKey(), mValueProxy.getPreviewValue(value));
+            settings.addPreviewListener(this);
+        }
+    }
+
+    @Override
+    public void onPreviewValueChanged(final String key, final Object previewValue) {
+        if (!getKey().equals(key) || previewValue == null || mSeekBar == null
+                || mFollowingPreview) {
+            return;
+        }
+        mFollowingPreview = true;
+        mSeekBar.setProgress(getProgressFromValue(
+                clipValue(mValueProxy.getValueFromPreview(previewValue))));
+        mFollowingPreview = false;
     }
 
     @Override
@@ -161,6 +186,7 @@ public final class SeekBarDialogPreference extends DialogPreference
     protected void onDialogClosed(final boolean positiveResult) {
         super.onDialogClosed(positiveResult);
         if (mShowTestField) {
+            Settings.getInstance().removePreviewListener(this);
             Settings.getInstance().setPreviewValue(getKey(), null);
         }
     }
@@ -169,8 +195,10 @@ public final class SeekBarDialogPreference extends DialogPreference
     public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
         final int value = getClippedValueFromProgress(progress);
         mValueView.setText(mValueProxy.getValueText(value));
-        if (mShowTestField && fromUser) {
+        if (mShowTestField && fromUser && !mFollowingPreview) {
+            mFollowingPreview = true;
             Settings.getInstance().setPreviewValue(getKey(), mValueProxy.getPreviewValue(value));
+            mFollowingPreview = false;
         }
     }
 

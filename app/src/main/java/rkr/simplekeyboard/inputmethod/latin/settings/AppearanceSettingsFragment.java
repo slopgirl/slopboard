@@ -114,6 +114,16 @@ public final class AppearanceSettingsFragment extends SubScreenFragment {
 
             @Override
             public void feedbackValue(final int value) {}
+
+            @Override
+            public Object getPreviewValue(final int value) {
+                return getValueFromPercentage(value);
+            }
+
+            @Override
+            public int getValueFromPreview(final Object previewValue) {
+                return getPercentageFromValue((Float) previewValue);
+            }
         });
     }
 

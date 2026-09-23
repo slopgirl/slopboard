@@ -60,6 +60,20 @@ CHANGELOG.md.
   is kept). `KeyboardSwitcher#getVisibleKeyboardView` returns the panel while it's shown, since
   LatinIME#onComputeInsets uses it for the touchable region. Closed on onFinishInputView.
 
+- EmojiPickerView renders each emoji to a bitmap at 30 sp and scales it to the cell, so
+  EmojiPanelView sets the column count to keep cells no wider than that bitmap. It hides emoji
+  the device font can't render (UnicodeRenderableManager), unless EmojiCompat is loaded.
+
+## Keyboard height handle
+- Settings#addPreviewListener: LatinIME reloads the keyboard for height/bottom offset previews,
+  and shows KeyboardResizeHandleView (layout/keyboard_resize_handle.xml, in both input_view
+  layouts) while a PREF_KEYBOARD_HEIGHT preview exists.
+- Seek bar dialogs with a test field set their preview as soon as they open, which is how the
+  keyboard knows the height dialog is open, and they follow preview changes from elsewhere
+  (ValueProxy#getValueFromPreview).
+- The handle is placed via its bottomMargin = keyboard view height (layout listener in
+  KeyboardSwitcher). onComputeInsets adds its height to the touchable/visible area.
+
 ## Keypress sound styles
 - `pref_keypress_sound_style` (ListPreference, default "system"). Values and names are in
   res/values/keypress-sound-styles.xml.

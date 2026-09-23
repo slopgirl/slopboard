@@ -31,6 +31,7 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+    <include layout="@layout/keyboard_resize_handle" />
     <!-- Shown over the keyboard view by the emoji key; see EmojiPanelView#show. -->
     <include layout="@layout/emoji_panel" />
 </rkr.simplekeyboard.inputmethod.latin.InputView>

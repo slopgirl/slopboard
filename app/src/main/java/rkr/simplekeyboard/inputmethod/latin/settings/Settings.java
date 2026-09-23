@@ -31,9 +31,11 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 
 import rkr.simplekeyboard.inputmethod.R;
@@ -84,6 +86,12 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
     // Unsaved values from an open settings dialog, keyed by preference key. They are applied on
     // top of the saved preferences so they can be tried in the dialog's test field.
     private final Map<String, Object> mPreviewValues = new ConcurrentHashMap<>();
+    private final List<PreviewListener> mPreviewListeners = new CopyOnWriteArrayList<>();
+
+    /** Told about every preview value change, after the settings have been reloaded. */
+    public interface PreviewListener {
+        void onPreviewValueChanged(String key, Object value);
+    }
 
     private static final Settings sInstance = new Settings();
 
@@ -224,6 +232,21 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
         if (mPrefs != null) {
             onSharedPreferenceChanged(mPrefs, key);
         }
+        for (final PreviewListener listener : mPreviewListeners) {
+            listener.onPreviewValueChanged(key, value);
+        }
+    }
+
+    public Object getPreviewValue(final String key) {
+        return mPreviewValues.get(key);
+    }
+
+    public void addPreviewListener(final PreviewListener listener) {
+        mPreviewListeners.add(listener);
+    }
+
+    public void removePreviewListener(final PreviewListener listener) {
+        mPreviewListeners.remove(listener);
     }
 
     // TODO: Remove this method and add proxy method to SettingsValues.

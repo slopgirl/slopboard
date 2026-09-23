@@ -259,6 +259,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         KeyboardSwitcher.init(this);
         AudioAndHapticFeedbackManager.init(this);
         super.onCreate();
+        mSettings.addPreviewListener(mPreviewListener);
 
         // TODO: Resolve mutual dependencies of {@link #loadSettings()} and
         // {@link #resetDictionaryFacilitatorIfNecessary()}.
@@ -281,6 +282,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     @Override
     public void onDestroy() {
+        mSettings.removePreviewListener(mPreviewListener);
         mSettings.onDestroy();
         unregisterReceiver(mRingerModeChangeReceiver);
         super.onDestroy();
@@ -554,7 +556,8 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             outInsets.visibleTopInsets = inputHeight;
             return;
         }
-        final int visibleTopY = inputHeight - visibleKeyboardView.getHeight();
+        final int visibleTopY = inputHeight - visibleKeyboardView.getHeight()
+                - mKeyboardSwitcher.getResizeHandleHeight();
         // Need to set expanded touchable region only if a keyboard view is being shown.
         if (visibleKeyboardView.isShown()) {
             final int touchLeft = 0;
@@ -781,6 +784,20 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         // User finished sliding input.
         mKeyboardSwitcher.onFinishSlidingInput(getCurrentAutoCapsState(),
                 getCurrentRecapitalizeState());
+    }
+
+    // Previews from open settings dialogs: size changes show immediately, and the keyboard
+    // height dialog gets a drag handle on top of the keyboard.
+    private final Settings.PreviewListener mPreviewListener = this::onPreviewValueChanged;
+
+    private void onPreviewValueChanged(final String key, final Object value) {
+        final boolean isHeight = Settings.PREF_KEYBOARD_HEIGHT.equals(key);
+        if ((isHeight || Settings.PREF_BOTTOM_OFFSET_PORTRAIT.equals(key)) && isInputViewShown()) {
+            loadKeyboard();
+        }
+        if (isHeight) {
+            mKeyboardSwitcher.setResizeHandleVisible(value != null);
+        }
     }
 
     private void loadKeyboard() {

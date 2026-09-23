@@ -62,7 +62,7 @@
     <!-- Keyboard height -->
     <integer name="config_max_keyboar_height">150</integer>
     <integer name="config_min_keyboar_height">50</integer>
-    <integer name="config_keyboar_height_step">5</integer>
+    <integer name="config_keyboar_height_step">1</integer>
 
     <!-- Bottom offset -->
     <integer name="config_max_bottom_offset_portrait">100</integer>

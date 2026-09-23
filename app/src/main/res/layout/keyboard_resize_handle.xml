@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Drag handle above the keyboard while the keyboard height dialog is open; see
+     KeyboardSwitcher#setResizeHandleVisible. -->
+<rkr.simplekeyboard.inputmethod.keyboard.KeyboardResizeHandleView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/keyboard_resize_handle"
+    android:layout_width="match_parent"
+    android:layout_height="36dp"
+    android:layout_gravity="bottom"
+    android:visibility="gone" />

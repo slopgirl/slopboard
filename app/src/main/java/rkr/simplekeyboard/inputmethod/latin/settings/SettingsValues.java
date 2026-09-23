@@ -97,8 +97,10 @@ public class SettingsValues {
                 Settings.readKeypressSoundVolume(prefs));
         mKeypressSoundStyle = Settings.readKeypressSoundStyle(prefs, res);
         mKeyPreviewPopupDismissDelay = res.getInteger(R.integer.config_key_preview_linger_timeout);
-        mKeyboardHeightScale = Settings.readKeyboardHeight(prefs, DEFAULT_SIZE_SCALE);
-        mBottomOffsetPortrait = Settings.readBottomOffsetPortrait(prefs);
+        mKeyboardHeightScale = previewOr(previewValues, Settings.PREF_KEYBOARD_HEIGHT,
+                Settings.readKeyboardHeight(prefs, DEFAULT_SIZE_SCALE));
+        mBottomOffsetPortrait = previewOr(previewValues, Settings.PREF_BOTTOM_OFFSET_PORTRAIT,
+                Settings.readBottomOffsetPortrait(prefs));
         mDisplayOrientation = res.getConfiguration().orientation;
         mShowSpecialChars = Settings.readShowSpecialChars(prefs);
         mShowNumberRow = Settings.readShowNumberRow(prefs);

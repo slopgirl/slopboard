@@ -25,6 +25,7 @@ import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 
 import rkr.simplekeyboard.inputmethod.R;
@@ -41,12 +42,14 @@ import rkr.simplekeyboard.inputmethod.latin.utils.CapsModeUtils;
 import rkr.simplekeyboard.inputmethod.latin.utils.LanguageOnSpacebarUtils;
 import rkr.simplekeyboard.inputmethod.latin.utils.RecapitalizeStatus;
 import rkr.simplekeyboard.inputmethod.latin.utils.ResourceUtils;
+import rkr.simplekeyboard.inputmethod.latin.utils.ViewLayoutUtils;
 
 public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     private static final String TAG = KeyboardSwitcher.class.getSimpleName();
 
     private MainKeyboardView mKeyboardView;
     private EmojiPanelView mEmojiPanel;
+    private KeyboardResizeHandleView mResizeHandle;
     private LatinIME mLatinIME;
     private RichInputMethodManager mRichImm;
 
@@ -366,6 +369,28 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mKeyboardView.setVisibility(View.INVISIBLE);
     }
 
+    /** Shows the keyboard height drag handle, while the keyboard height dialog is open. */
+    public void setResizeHandleVisible(final boolean visible) {
+        if (mResizeHandle == null || mKeyboardView == null) {
+            return;
+        }
+        if (visible) {
+            hideEmojiPanel();
+            ViewLayoutUtils.copyBackground(mKeyboardView, mResizeHandle);
+            final SettingsValues settingsValues = Settings.getInstance().getCurrent();
+            if (settingsValues != null) {
+                mResizeHandle.setHeightScale(settingsValues.mKeyboardHeightScale);
+            }
+        }
+        mResizeHandle.setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
+
+    /** Height the resize handle adds above the keyboard, 0 when it's hidden. */
+    public int getResizeHandleHeight() {
+        return mResizeHandle != null && mResizeHandle.getVisibility() == View.VISIBLE
+                ? mResizeHandle.getHeight() : 0;
+    }
+
     public void hideEmojiPanel() {
         if (mEmojiPanel == null || !mEmojiPanel.isShowing()) {
             return;
@@ -399,6 +424,19 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         mKeyboardView.setKeyboardActionListener(mLatinIME);
         mEmojiPanel = currentInputView.findViewById(R.id.emoji_panel);
         mEmojiPanel.setListeners(mLatinIME, this::hideEmojiPanel);
+        mResizeHandle = currentInputView.findViewById(R.id.keyboard_resize_handle);
+        // Keep the handle sitting right on top of the keyboard as its height changes.
+        mKeyboardView.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop,
+                oldRight, oldBottom) -> {
+            final ViewGroup.MarginLayoutParams params =
+                    (ViewGroup.MarginLayoutParams) mResizeHandle.getLayoutParams();
+            if (params.bottomMargin != bottom - top) {
+                params.bottomMargin = bottom - top;
+                mResizeHandle.post(mResizeHandle::requestLayout);
+            }
+        });
+        setResizeHandleVisible(Settings.getInstance().getPreviewValue(
+                Settings.PREF_KEYBOARD_HEIGHT) != null);
         return currentInputView;
     }
 }

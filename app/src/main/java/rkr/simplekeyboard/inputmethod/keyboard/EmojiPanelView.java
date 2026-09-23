@@ -18,10 +18,12 @@ package rkr.simplekeyboard.inputmethod.keyboard;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
+import android.graphics.Paint;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -30,12 +32,19 @@ import androidx.emoji2.emojipicker.EmojiPickerView;
 
 import rkr.simplekeyboard.inputmethod.R;
 import rkr.simplekeyboard.inputmethod.latin.common.Constants;
+import rkr.simplekeyboard.inputmethod.latin.utils.ViewLayoutUtils;
 
 /**
  * Emoji picker shown in place of the keyboard by the emoji key, with a bar to go back to the
  * letters and a delete key that repeats while held.
  */
 public final class EmojiPanelView extends LinearLayout {
+    private static final float MAX_HEIGHT_TO_KEYBOARD = 1.5f;
+    private static final float MAX_HEIGHT_TO_SCREEN = 0.6f;
+    // EmojiPickerView draws each emoji into a bitmap at this text size and scales that to its
+    // grid cell (see androidx EmojiView), so cells wider than the bitmap make emoji blurry.
+    private static final float PICKER_EMOJI_TEXT_SIZE_SP = 30;
+
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final int mRepeatStartTimeout;
     private final int mRepeatInterval;
@@ -71,6 +80,7 @@ public final class EmojiPanelView extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
         final EmojiPickerView picker = findViewById(R.id.emoji_panel_picker);
+        picker.setEmojiGridColumns(getSharpColumnCount());
         picker.setOnEmojiPickedListener(item -> {
             mListener.onPressKey(Constants.CODE_OUTPUT_TEXT, 0, true);
             mListener.onTextInput(item.getEmoji());
@@ -100,6 +110,17 @@ public final class EmojiPanelView extends LinearLayout {
         });
     }
 
+    // The fewest grid columns whose cells are no wider than the picker's emoji bitmaps.
+    private int getSharpColumnCount() {
+        final TextPaint paint = new TextPaint();
+        paint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
+                PICKER_EMOJI_TEXT_SIZE_SP, getResources().getDisplayMetrics()));
+        final Paint.FontMetricsInt metrics = paint.getFontMetricsInt();
+        final int bitmapSize = metrics.bottom - metrics.top;
+        final int width = getResources().getDisplayMetrics().widthPixels;
+        return Math.max(1, (width + bitmapSize - 1) / bitmapSize);
+    }
+
     private void sendDelete(final int repeatCount) {
         mListener.onPressKey(Constants.CODE_DELETE, repeatCount, true);
         mListener.onCodeInput(Constants.CODE_DELETE, Constants.NOT_A_COORDINATE,
@@ -107,19 +128,18 @@ public final class EmojiPanelView extends LinearLayout {
         mListener.onReleaseKey(Constants.CODE_DELETE, false);
     }
 
-    /** Shows the panel over the keyboard view, with the keyboard's size, padding and background. */
+    /** Shows the panel over the keyboard view, with the keyboard's padding and background. */
     public void show(final View keyboardView) {
-        getLayoutParams().height = keyboardView.getHeight();
+        // Taller than the keyboard when there's room: emoji need more space than keys.
+        final int keyboardHeight = keyboardView.getHeight();
+        final int screenHeight = getResources().getDisplayMetrics().heightPixels;
+        getLayoutParams().height = Math.max(keyboardHeight, Math.min(
+                Math.round(keyboardHeight * MAX_HEIGHT_TO_KEYBOARD),
+                Math.round(screenHeight * MAX_HEIGHT_TO_SCREEN)));
         // Same insets as the keyboard, which pads itself for the navigation bar on newer Android.
         setPadding(keyboardView.getPaddingLeft(), keyboardView.getPaddingTop(),
                 keyboardView.getPaddingRight(), keyboardView.getPaddingBottom());
-        final Drawable background = keyboardView.getBackground();
-        if (background != null && background.getConstantState() != null) {
-            final Drawable copy = background.getConstantState().newDrawable().mutate();
-            // The custom keyboard color is a color filter, which the constant state leaves out.
-            copy.setColorFilter(background.getColorFilter());
-            setBackground(copy);
-        }
+        ViewLayoutUtils.copyBackground(keyboardView, this);
         setVisibility(View.VISIBLE);
         requestLayout();
     }
