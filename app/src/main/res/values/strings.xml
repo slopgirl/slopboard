@@ -99,9 +99,9 @@
     <!-- Title of the settings for keypress vibration duration [CHAR LIMIT=35] -->
     <string name="prefs_keypress_vibration_duration_settings">Keypress vibration duration</string>
     <!-- Option to vibrate regardless of system vibration / touch feedback / silent mode settings [CHAR LIMIT=35] -->
-    <string name="vibrate_ignore_system_settings">Ignore system vibration settings</string>
+    <string name="vibrate_ignore_system_settings">Ignore touch feedback setting</string>
     <!-- Description of the option to vibrate regardless of system settings -->
-    <string name="vibrate_ignore_system_settings_summary">Vibrate even if touch feedback is off, the phone is silent or battery saver is on</string>
+    <string name="vibrate_ignore_system_settings_summary">Vibrate even if touch feedback is off. Silent mode and battery saver still turn it off</string>
     <!-- Title of the settings for keypress sound volume [CHAR LIMIT=35] -->
     <string name="prefs_keypress_sound_volume_settings">Keypress sound volume</string>
     <!-- Title of the settings for key long press delay [CHAR LIMIT=35] -->

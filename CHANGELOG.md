@@ -6,6 +6,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+### Changed
+- "Ignore system vibration settings" is now "Ignore touch feedback setting": it still vibrates
+  with Android's touch feedback off, but silent mode and battery saver turn keypress vibration
+  off again.
+
 ## [1.0.0] - 2026-09-24
 
 First slopboard release, based on upstream Simple Keyboard 6.7 (versionCode 148).

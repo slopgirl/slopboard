@@ -42,10 +42,11 @@ CHANGELOG.md.
   Selectable values: `config_vibration_durations` in config-common.xml.
 - `SeekBarDialogPreference` takes an optional `latin:values` integer-array: tick i = values[i].
   Stored values not in the list snap to the nearest one.
-- `pref_vibration_ignore_system_settings` (default true) vibrates with USAGE_ALARM
-  (VibrationAttributes on API 33+, AudioAttributes below). FLAG_BYPASS_INTERRUPTION_POLICY is
-  set but ignored without a privileged permission. Still blocked by: alarm vibration intensity
-  off, DND without alarms.
+- `pref_vibration_ignore_system_settings` (default true; shown as "Ignore touch feedback
+  setting") vibrates with USAGE_ALARM (VibrationAttributes on API 33+, AudioAttributes below)
+  to get past touch feedback off. Alarm usage would also skip silent mode and battery saver, so
+  `isSilentOrPowerSaving()` checks those by hand; the user wants them respected (2026-09-24).
+  FLAG_BYPASS_INTERRUPTION_POLICY is set but ignored without a privileged permission.
 - API <29 with the default duration keeps the old `view.performHapticFeedback` path.
 - Not yet tested on a real device.
 

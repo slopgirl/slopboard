@@ -23,6 +23,7 @@ import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Build;
+import android.os.PowerManager;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -53,6 +54,7 @@ public final class AudioAndHapticFeedbackManager {
     private ExecutorService mBackgroundThread;
     private AudioManager mAudioManager;
     private Vibrator mVibrator;
+    private PowerManager mPowerManager;
 
     private SettingsValues mSettingsValues;
     private boolean mSoundOn;
@@ -101,6 +103,7 @@ public final class AudioAndHapticFeedbackManager {
         mBackgroundThread.execute(() -> {
             mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
             mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+            mPowerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         });
     }
 
@@ -296,7 +299,8 @@ public final class AudioAndHapticFeedbackManager {
      * default click effect, zero does nothing.
      */
     public void vibrate(final int durationMs, final boolean ignoreSystemSettings) {
-        if (mVibrator == null || durationMs == 0) {
+        if (mVibrator == null || durationMs == 0
+                || (ignoreSystemSettings && isSilentOrPowerSaving())) {
             return;
         }
         mBackgroundThread.execute(() -> {
@@ -354,9 +358,11 @@ public final class AudioAndHapticFeedbackManager {
     private void vibrate(final VibrationEffect effect, final boolean ignoreSystemSettings) {
         if (!ignoreSystemSettings) {
             mVibrator.vibrate(effect);
+        } else if (isSilentOrPowerSaving()) {
+            return;
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // Alarm vibrations are not affected by the touch feedback setting, silent ringer
-            // mode, Do Not Disturb (when alarms are allowed) or battery saver.
+            // Alarm vibrations are not affected by the touch feedback setting. They also get past
+            // silent mode and battery saver, which isSilentOrPowerSaving() puts back.
             // FLAG_BYPASS_INTERRUPTION_POLICY is silently dropped unless the app holds a
             // privileged permission, but it costs nothing to ask.
             mVibrator.vibrate(effect, new VibrationAttributes.Builder()
@@ -367,6 +373,17 @@ public final class AudioAndHapticFeedbackManager {
         } else {
             mVibrator.vibrate(effect, getBypassAudioAttributes());
         }
+    }
+
+    /**
+     * Silent mode and battery saver still turn keypress vibration off when ignoring the system
+     * settings: that option is only meant to get past "touch feedback off". The alarm usage used
+     * for it would otherwise skip these too.
+     */
+    private boolean isSilentOrPowerSaving() {
+        return (mAudioManager != null
+                && mAudioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT)
+                || (mPowerManager != null && mPowerManager.isPowerSaveMode());
     }
 
     private static AudioAttributes getBypassAudioAttributes() {
