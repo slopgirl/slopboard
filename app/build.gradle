@@ -1,5 +1,21 @@
 apply plugin: 'com.android.application'
 
+// Release signing: a gitignored keystore.properties in the repo root (storeFile, storePassword,
+// keyAlias, keyPassword) wins; otherwise the committed, public dummy keystore is used, so
+// release builds work out of the box but are NOT suitable for distribution.
+def keystoreProps = new Properties()
+def keystorePropsFile = rootProject.file('keystore.properties')
+if (keystorePropsFile.exists()) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+} else {
+    keystoreProps.putAll([
+            storeFile    : 'keystore/dummy-release.keystore',
+            storePassword: 'slopboard',
+            keyAlias     : 'slopboard',
+            keyPassword  : 'slopboard',
+    ])
+}
+
 android {
     defaultConfig {
         applicationId "rkr.simplekeyboard.inputmethod"
@@ -9,8 +25,17 @@ android {
         versionCode 148
         versionName "6.7"
     }
+    signingConfigs {
+        release {
+            storeFile rootProject.file(keystoreProps['storeFile'])
+            storePassword keystoreProps['storePassword']
+            keyAlias keystoreProps['keyAlias']
+            keyPassword keystoreProps['keyPassword']
+        }
+    }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

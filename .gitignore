@@ -43,6 +43,8 @@ captures/
 
 # Keystore files
 *.jks
+# Real release signing config (see app/build.gradle); keystore/dummy-release.keystore is public
+keystore.properties
 
 .idea
 
