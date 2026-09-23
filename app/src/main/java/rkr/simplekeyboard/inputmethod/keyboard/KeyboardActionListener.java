@@ -76,6 +76,13 @@ public interface KeyboardActionListener {
      * @return true if the request has been consumed, false otherwise.
      */
     boolean onCustomRequest(int requestCode);
+
+    /**
+     * Called for haptic and audio feedback without any input: when a long press opens the more
+     * keys panel, and when the selection in that panel moves to another key.
+     * @param primaryCode the code of the key being selected, which picks the sound.
+     */
+    void onMoreKeysFeedback(int primaryCode);
     void onMoveCursorPointer(int steps);
     void onMoveDeletePointer(int steps);
     void onUpWithDeletePointerActive();
@@ -94,6 +101,8 @@ public interface KeyboardActionListener {
         public void onTextInput(String text) {}
         @Override
         public void onFinishSlidingInput() {}
+        @Override
+        public void onMoreKeysFeedback(int primaryCode) {}
         @Override
         public boolean onCustomRequest(int requestCode) {
             return false;

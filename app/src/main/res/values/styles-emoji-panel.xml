@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Theme overlay for androidx's EmojiPickerView: its category titles and "no recent emoji"
+         text use android:textColorPrimary, which the keyboard themes don't set to something
+         readable on the keyboard background. -->
+    <style name="EmojiPanelPicker" parent="">
+        <item name="android:textColorPrimary">?attr/functionalTextColor</item>
+        <item name="android:textColorSecondary">?attr/functionalTextColor</item>
+    </style>
+</resources>

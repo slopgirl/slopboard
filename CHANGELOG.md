@@ -23,7 +23,8 @@ Based on upstream 6.7 (versionCode 148).
   (Android's emoji picker, with categories and recently used emoji) with an ABC key back to the
   letters and a delete key. The panel is up to 1.5x the keyboard's height (at most 60% of the
   screen), with enough columns that emoji aren't scaled up. A held emoji pops up in a bigger
-  bubble above your finger, like the key previews. The APK grows from about 0.6 MB to
+  bubble above your finger, like the key previews. Category titles use the keyboard's text color
+  (they were invisible on dark themes). The APK grows from about 0.6 MB to
   1.6 MB.
 - Keypress vibration duration setting: system default, off (0 ms) or 1–100 ms. The slider is
   non-linear — 1 ms steps up to 10 ms, then 2, 5 and 10 ms steps up to 100 ms.
@@ -32,6 +33,8 @@ Based on upstream 6.7 (versionCode 148).
 - Test text field at the top of the key press settings, and in the vibration duration, sound
   volume and long-press delay dialogs. In the dialogs the keyboard uses the slider's value
   before it is saved.
+- A long press that opens the popup of extra characters vibrates and clicks, and so does each
+  move to another character in that popup.
 - Holding a key (including backspace) vibrates for every repeated character, not only the first
   press.
 - Release builds are signed out of the box with a public dummy keystore; a gitignored

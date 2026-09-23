@@ -169,6 +169,11 @@ public class MoreKeysKeyboardView extends KeyboardView implements MoreKeysPanel 
         if (newKey != null) {
             updatePressKeyGraphics(newKey);
             invalidateKey(newKey);
+            if (oldKey != null) {
+                // Moved from one key to another; the long press that opened the panel already
+                // gave feedback for the first one.
+                mListener.onMoreKeysFeedback(newKey.getCode());
+            }
         }
         return newKey;
     }

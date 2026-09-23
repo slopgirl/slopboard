@@ -12,6 +12,7 @@
     tools:visibility="visible">
     <androidx.emoji2.emojipicker.EmojiPickerView
         android:id="@+id/emoji_panel_picker"
+        android:theme="@style/EmojiPanelPicker"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />

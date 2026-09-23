@@ -780,6 +780,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element {
         final int translatedY = moreKeysPanel.translateY(mLastY);
         moreKeysPanel.onDownEvent(translatedX, translatedY, mPointerId);
         mMoreKeysPanel = moreKeysPanel;
+        sListener.onMoreKeysFeedback(key.getCode());
     }
 
     private void cancelKeyTracking() {

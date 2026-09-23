@@ -855,6 +855,14 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         feedbackManager.performAudioFeedback(code);
     }
 
+    // Implementation of {@link KeyboardActionListener}.
+    @Override
+    public void onMoreKeysFeedback(final int primaryCode) {
+        final AudioAndHapticFeedbackManager feedbackManager = AudioAndHapticFeedbackManager.getInstance();
+        feedbackManager.performHapticFeedback(mKeyboardSwitcher.getMainKeyboardView());
+        feedbackManager.performAudioFeedback(primaryCode);
+    }
+
     private void hapticTickFeedback() {
         final AudioAndHapticFeedbackManager feedbackManager = AudioAndHapticFeedbackManager.getInstance();
         feedbackManager.performTickFeedback();
