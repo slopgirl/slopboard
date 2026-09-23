@@ -45,3 +45,6 @@ captures/
 *.jks
 
 .idea
+
+# Claude Code session handoff snapshot
+.claude/z-handoff.md
