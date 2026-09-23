@@ -27,7 +27,8 @@
         android:key="pref_vibration_duration"
         android:title="@string/prefs_keypress_vibration_duration_settings"
         android:dependency="vibrate_on"
-        latin:values="@array/config_vibration_durations" />
+        latin:values="@array/config_vibration_durations"
+        latin:showTestField="true" />
     <SwitchPreference
         android:key="pref_vibration_ignore_system_settings"
         android:title="@string/vibrate_ignore_system_settings"
@@ -44,7 +45,8 @@
         android:key="pref_keypress_sound_volume"
         android:title="@string/prefs_keypress_sound_volume_settings"
         android:dependency="sound_on"
-        latin:maxValue="100" /> <!-- percent -->
+        latin:maxValue="100"
+        latin:showTestField="true" /> <!-- percent -->
     <SwitchPreference
         android:key="popup_on"
         android:title="@string/popup_on_keypress"
@@ -55,5 +57,6 @@
         android:title="@string/prefs_key_longpress_timeout_settings"
         latin:minValue="@integer/config_min_longpress_timeout"
         latin:maxValue="@integer/config_max_longpress_timeout"
-        latin:stepValue="@integer/config_longpress_timeout_step" />
+        latin:stepValue="@integer/config_longpress_timeout_step"
+        latin:showTestField="true" />
 </PreferenceScreen>

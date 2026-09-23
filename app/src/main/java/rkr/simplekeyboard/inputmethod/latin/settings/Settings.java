@@ -31,7 +31,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import rkr.simplekeyboard.inputmethod.R;
@@ -77,6 +79,9 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
     private SettingsValues mSettingsValues;
     private RestrictionsManager mRestrictionsMgr;
     private final ReentrantLock mSettingsValuesLock = new ReentrantLock();
+    // Unsaved values from an open settings dialog, keyed by preference key. They are applied on
+    // top of the saved preferences so they can be tried in the dialog's test field.
+    private final Map<String, Object> mPreviewValues = new ConcurrentHashMap<>();
 
     private static final Settings sInstance = new Settings();
 
@@ -118,6 +123,9 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
                 return;
             }
             loadSettings(mSettingsValues.mInputAttributes);
+            // The feedback manager keeps its own copy, which LatinIME only refreshes when input
+            // starts in a different field; refresh it now so the settings test fields see it.
+            AudioAndHapticFeedbackManager.getInstance().onSettingsChanged(mSettingsValues);
         } finally {
             mSettingsValuesLock.unlock();
         }
@@ -198,7 +206,22 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
     }
 
     public void loadSettings(final InputAttributes inputAttributes) {
-        mSettingsValues = new SettingsValues(mPrefs, mRes, inputAttributes);
+        mSettingsValues = new SettingsValues(mPrefs, mRes, inputAttributes, mPreviewValues);
+    }
+
+    /**
+     * Makes the running keyboard use {@code value} for the preference {@code key} without saving
+     * it; null goes back to the saved value.
+     */
+    public void setPreviewValue(final String key, final Object value) {
+        if (value == null) {
+            mPreviewValues.remove(key);
+        } else {
+            mPreviewValues.put(key, value);
+        }
+        if (mPrefs != null) {
+            onSharedPreferenceChanged(mPrefs, key);
+        }
     }
 
     // TODO: Remove this method and add proxy method to SettingsValues.

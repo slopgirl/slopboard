@@ -40,4 +40,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"/>
+    <include
+        android:id="@+id/seek_bar_dialog_test_field"
+        layout="@layout/settings_test_field"
+        android:visibility="gone" />
 </LinearLayout>

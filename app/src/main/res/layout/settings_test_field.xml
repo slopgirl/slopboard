@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Text field in the settings for trying out the keyboard with the current settings. -->
+<EditText
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:hint="@string/settings_test_field_hint"
+    android:importantForAutofill="no"
+    android:inputType="textMultiLine"
+    android:maxLines="3" />

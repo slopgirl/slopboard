@@ -395,5 +395,7 @@
         <!-- Optional explicit list of selectable values, one per seek bar tick. Overrides
              minValue/maxValue/stepValue, e.g. for a non-linear scale. -->
         <attr name="values" format="reference" />
+        <!-- Show a text field in the dialog to try the unsaved value with the keyboard. -->
+        <attr name="showTestField" format="boolean" />
     </declare-styleable>
 </resources>

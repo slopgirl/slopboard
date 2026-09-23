@@ -24,6 +24,8 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.view.inputmethod.EditorInfo;
 
+import java.util.Map;
+
 import rkr.simplekeyboard.inputmethod.R;
 import rkr.simplekeyboard.inputmethod.latin.InputAttributes;
 
@@ -65,7 +67,7 @@ public class SettingsValues {
     public final int mBottomOffsetPortrait;
 
     public SettingsValues(final SharedPreferences prefs, final Resources res,
-            final InputAttributes inputAttributes) {
+            final InputAttributes inputAttributes, final Map<String, Object> previewValues) {
         // Get the resources
         mSpacingAndPunctuations = new SpacingAndPunctuations(res);
 
@@ -75,7 +77,8 @@ public class SettingsValues {
         // Get the settings preferences
         mAutoCap = prefs.getBoolean(Settings.PREF_AUTO_CAP, true);
         mVibrateOn = Settings.readVibrationEnabled(prefs, res);
-        mVibrationDuration = Settings.readVibrationDuration(prefs);
+        mVibrationDuration = previewOr(previewValues, Settings.PREF_VIBRATION_DURATION,
+                Settings.readVibrationDuration(prefs));
         mVibrationIgnoreSystemSettings = Settings.readVibrationIgnoreSystemSettings(prefs, res);
         mSoundOn = Settings.readKeypressSoundEnabled(prefs, res);
         mKeyPreviewPopupOn = Settings.readKeyPreviewPopupEnabled(prefs, res);
@@ -85,8 +88,10 @@ public class SettingsValues {
         mHasHardwareKeyboard = Settings.readHasHardwareKeyboard(res.getConfiguration());
 
         // Compute other readable settings
-        mKeyLongpressTimeout = Settings.readKeyLongpressTimeout(prefs, res);
-        mKeypressSoundVolume = Settings.readKeypressSoundVolume(prefs);
+        mKeyLongpressTimeout = previewOr(previewValues, Settings.PREF_KEY_LONGPRESS_TIMEOUT,
+                Settings.readKeyLongpressTimeout(prefs, res));
+        mKeypressSoundVolume = previewOr(previewValues, Settings.PREF_KEYPRESS_SOUND_VOLUME,
+                Settings.readKeypressSoundVolume(prefs));
         mKeyPreviewPopupDismissDelay = res.getInteger(R.integer.config_key_preview_linger_timeout);
         mKeyboardHeightScale = Settings.readKeyboardHeight(prefs, DEFAULT_SIZE_SCALE);
         mBottomOffsetPortrait = Settings.readBottomOffsetPortrait(prefs);
@@ -95,6 +100,14 @@ public class SettingsValues {
         mShowNumberRow = Settings.readShowNumberRow(prefs);
         mSpaceSwipeEnabled = Settings.readSpaceSwipeEnabled(prefs);
         mDeleteSwipeEnabled = Settings.readDeleteSwipeEnabled(prefs);
+    }
+
+    // Returns the unsaved preview value for key if there is one (see Settings#setPreviewValue).
+    @SuppressWarnings("unchecked")
+    private static <T> T previewOr(final Map<String, Object> previewValues, final String key,
+            final T savedValue) {
+        final Object previewValue = previewValues.get(key);
+        return previewValue != null ? (T) previewValue : savedValue;
     }
 
     public boolean isWordSeparator(final int code) {

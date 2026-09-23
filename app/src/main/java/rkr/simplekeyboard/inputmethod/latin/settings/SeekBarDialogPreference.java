@@ -38,6 +38,10 @@ public final class SeekBarDialogPreference extends DialogPreference
         void writeDefaultValue(final String key);
         String getValueText(final int value);
         void feedbackValue(final int value);
+        // The unsaved value as SettingsValues holds it, previewed in the dialog's test field.
+        default Object getPreviewValue(final int value) {
+            return value;
+        }
     }
 
     private final int mMaxValue;
@@ -45,6 +49,8 @@ public final class SeekBarDialogPreference extends DialogPreference
     private final int mStepValue;
     // When set, tick i of the seek bar selects mValues[i] (ascending); min/max/step are unused.
     private final int[] mValues;
+    // Shows a text field in the dialog in which the unsaved value can be tried out.
+    private final boolean mShowTestField;
 
     private TextView mValueView;
     private SeekBar mSeekBar;
@@ -60,6 +66,7 @@ public final class SeekBarDialogPreference extends DialogPreference
         mStepValue = a.getInt(R.styleable.SeekBarDialogPreference_stepValue, 0);
         final int valuesId = a.getResourceId(R.styleable.SeekBarDialogPreference_values, 0);
         mValues = valuesId != 0 ? context.getResources().getIntArray(valuesId) : null;
+        mShowTestField = a.getBoolean(R.styleable.SeekBarDialogPreference_showTestField, false);
         a.recycle();
         setDialogLayoutResource(R.layout.seek_bar_dialog);
     }
@@ -77,6 +84,8 @@ public final class SeekBarDialogPreference extends DialogPreference
         mSeekBar.setMax(mValues != null ? mValues.length - 1 : mMaxValue - mMinValue);
         mSeekBar.setOnSeekBarChangeListener(this);
         mValueView = (TextView)view.findViewById(R.id.seek_bar_dialog_value);
+        view.findViewById(R.id.seek_bar_dialog_test_field).setVisibility(
+                mShowTestField ? View.VISIBLE : View.GONE);
         return view;
     }
 
@@ -149,9 +158,20 @@ public final class SeekBarDialogPreference extends DialogPreference
     }
 
     @Override
+    protected void onDialogClosed(final boolean positiveResult) {
+        super.onDialogClosed(positiveResult);
+        if (mShowTestField) {
+            Settings.getInstance().setPreviewValue(getKey(), null);
+        }
+    }
+
+    @Override
     public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
         final int value = getClippedValueFromProgress(progress);
         mValueView.setText(mValueProxy.getValueText(value));
+        if (mShowTestField && fromUser) {
+            Settings.getInstance().setPreviewValue(getKey(), mValueProxy.getPreviewValue(value));
+        }
     }
 
     @Override

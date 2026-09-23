@@ -23,6 +23,10 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import rkr.simplekeyboard.inputmethod.R;
 import rkr.simplekeyboard.inputmethod.latin.AudioAndHapticFeedbackManager;
@@ -38,6 +42,8 @@ import rkr.simplekeyboard.inputmethod.latin.AudioAndHapticFeedbackManager;
  * - Keypress sound volume
  * - Popup on keypress
  * - Key long press delay
+ *
+ * A text field above the list lets the keyboard be tried with the current settings.
  */
 public final class KeyPressSettingsFragment extends SubScreenFragment {
     @Override
@@ -61,6 +67,20 @@ public final class KeyPressSettingsFragment extends SubScreenFragment {
         setupKeypressVibrationDurationSettings();
         setupKeypressSoundVolumeSettings();
         setupKeyLongpressTimeoutSettings();
+    }
+
+    @Override
+    public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
+            final Bundle savedInstanceState) {
+        // Pinned above the preference list rather than inside it, where the ListView would take
+        // the focus away from the text field.
+        final View preferenceList = super.onCreateView(inflater, container, savedInstanceState);
+        final LinearLayout layout = new LinearLayout(getActivity());
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.addView(inflater.inflate(R.layout.settings_test_field, layout, false));
+        layout.addView(preferenceList, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1));
+        return layout;
     }
 
     private void setupKeypressVibrationDurationSettings() {
@@ -159,6 +179,11 @@ public final class KeyPressSettingsFragment extends SubScreenFragment {
             public void feedbackValue(final int value) {
                 AudioAndHapticFeedbackManager.getInstance().playSoundEffect(
                         AudioManager.FX_KEYPRESS_STANDARD, getValueFromPercentage(value));
+            }
+
+            @Override
+            public Object getPreviewValue(final int value) {
+                return getValueFromPercentage(value);
             }
         });
     }

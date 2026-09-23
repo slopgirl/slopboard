@@ -109,6 +109,8 @@
 
     <!-- Title of the button to revert to the default value of the device in the settings dialog [CHAR LIMIT=15] -->
     <string name="button_default">Default</string>
+    <!-- Hint of the text field in key press settings for trying the keyboard -->
+    <string name="settings_test_field_hint">Type here to test</string>
 
     <string translatable="false" name="abbreviation_unit_percent"><xliff:g id="PERCENTS">%s</xliff:g>%%</string>
     <string translatable="false" name="abbreviation_unit_dp"><xliff:g id="DENSITY_INDEPENDENT_PIXELS">%d</xliff:g> dp</string>

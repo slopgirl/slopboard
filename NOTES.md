@@ -40,3 +40,15 @@ CHANGELOG.md.
   off, DND without alarms.
 - API <29 with the default duration keeps the old `view.performHapticFeedback` path.
 - Not yet tested on a real device.
+
+## Settings test fields
+- Settings activity and IME share a process, so settings can talk to the running keyboard
+  directly.
+- `Settings#setPreviewValue(key, value)` overlays unsaved values onto SettingsValues (only
+  vibration duration, sound volume, long-press timeout read them). Seek bar dialogs with
+  `latin:showTestField="true"` set it while dragging and clear it on close.
+- `Settings#onSharedPreferenceChanged` now also pushes the new values to
+  AudioAndHapticFeedbackManager; before, it only picked them up when input moved to another field.
+- The key press screen's field sits above the preference ListView (KeyPressSettingsFragment
+  #onCreateView), since an EditText inside the ListView loses focus.
+- Keyboard-view settings such as the key popup only apply once the field is refocused.
