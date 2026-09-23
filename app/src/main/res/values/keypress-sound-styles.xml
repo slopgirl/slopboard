@@ -5,7 +5,7 @@
     <!-- Ranges of the synthesized sound settings (KeySoundSynth), not used by "system" -->
     <integer name="config_min_keypress_sound_pitch">-12</integer> <!-- semitones -->
     <integer name="config_max_keypress_sound_pitch">12</integer>
-    <integer name="config_min_keypress_sound_length">50</integer> <!-- percent -->
+    <integer name="config_min_keypress_sound_length">20</integer> <!-- percent -->
     <integer name="config_max_keypress_sound_length">200</integer>
     <integer name="config_keypress_sound_length_step">5</integer>
     <integer name="config_min_keypress_sound_tone">-10</integer> <!-- 15% cutoff steps -->

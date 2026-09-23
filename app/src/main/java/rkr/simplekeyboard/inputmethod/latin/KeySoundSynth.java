@@ -355,7 +355,8 @@ public final class KeySoundSynth {
             }
         }
         final float[] trimmed = Arrays.copyOf(in, last + 1);
-        final int fade = Math.min(trimmed.length, (int) (0.004 * RATE));
+        // At most a quarter of the sound, so very short sounds keep their level.
+        final int fade = Math.max(1, Math.min(trimmed.length / 4, (int) (0.004 * RATE)));
         final short[] out = new short[trimmed.length];
         for (int i = 0; i < trimmed.length; i++) {
             final int fromEnd = trimmed.length - 1 - i;
