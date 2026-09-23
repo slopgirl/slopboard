@@ -18,7 +18,7 @@ Based on upstream 6.7 (versionCode 148).
   bottom offset dialog previews live too, and both dialogs have a test field.
 - Keypress sound styles: System (as before), Soft tap, Click, Typewriter, Mechanical and Bubble,
   under Key press settings. Picking one plays a preview. The sounds are synthesized on the
-  device, so they have settings: pitch (±12 semitones), length (20–200%), tone (darker to
+  device, so they have settings: pitch (±24 semitones), length (10–200%), tone (darker to
   brighter) and a random pitch variation per keypress.
 - Emoji key next to the space bar (can be turned off under Preferences). It opens an emoji panel
   (Android's emoji picker, with categories and recently used emoji) with an ABC key back to the
