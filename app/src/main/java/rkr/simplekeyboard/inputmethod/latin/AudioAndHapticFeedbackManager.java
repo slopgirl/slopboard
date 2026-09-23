@@ -47,7 +47,8 @@ import rkr.simplekeyboard.inputmethod.latin.settings.SettingsValues;
  */
 public final class AudioAndHapticFeedbackManager {
     private static final String TAG = AudioAndHapticFeedbackManager.class.getSimpleName();
-    private static final long TICK_FREQUENCY = 100;
+    // Same as the key repeat interval, so swiping feels like holding a key.
+    private static final long TICK_FREQUENCY = 50;
     private static final long DEFAULT_LEGACY_VIBRATION_DURATION = 20;
     private ExecutorService mBackgroundThread;
     private AudioManager mAudioManager;
@@ -323,21 +324,29 @@ public final class AudioAndHapticFeedbackManager {
         });
     }
 
+    /**
+     * Feedback for each step of moving the cursor (or the delete selection) by swiping: the
+     * keypress vibration and sound, at most once per TICK_FREQUENCY ms.
+     */
     public void performTickFeedback() {
-        if (!mSettingsValues.mVibrateOn
-                || mVibrator == null
-                || System.currentTimeMillis() - mLastTickTime < TICK_FREQUENCY ) {
+        if (mSettingsValues == null
+                || System.currentTimeMillis() - mLastTickTime < TICK_FREQUENCY) {
             return;
         }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            mLastTickTime = System.currentTimeMillis();
+        mLastTickTime = System.currentTimeMillis();
+        if (mSettingsValues.mVibrateOn && mVibrator != null) {
+            final int duration = mSettingsValues.mVibrationDuration;
             final boolean ignoreSystemSettings = mSettingsValues.mVibrationIgnoreSystemSettings;
-            mBackgroundThread.execute(() -> {
-                vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK),
-                        ignoreSystemSettings);
-            });
+            if (duration < 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // With the system default length, a tick is lighter than a key click.
+                mBackgroundThread.execute(() -> vibrate(
+                        VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK),
+                        ignoreSystemSettings));
+            } else {
+                vibrate(duration, ignoreSystemSettings);
+            }
         }
+        performAudioFeedback(Constants.CODE_UNSPECIFIED);
     }
 
     // Must be called on the background thread.

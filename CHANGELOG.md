@@ -36,6 +36,9 @@ Based on upstream 6.7 (versionCode 148).
   before it is saved.
 - A long press that opens the popup of extra characters vibrates and clicks, and so does each
   move to another character in that popup.
+- Moving the cursor by swiping the space bar (or the delete key) vibrates with your keypress
+  vibration length and plays the key sound for each step, up to every 50 ms. Before, it only
+  gave the system tick vibration (Android 10+), at most every 100 ms.
 - Holding a key (including backspace) vibrates for every repeated character, not only the first
   press.
 - Release builds are signed out of the box with a public dummy keystore; a gitignored
