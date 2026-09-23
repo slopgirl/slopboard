@@ -27,9 +27,7 @@
         android:key="pref_vibration_duration"
         android:title="@string/prefs_keypress_vibration_duration_settings"
         android:dependency="vibrate_on"
-        latin:minValue="@integer/config_min_vibration_duration"
-        latin:maxValue="@integer/config_max_vibration_duration"
-        latin:stepValue="@integer/config_vibration_duration_step" />
+        latin:values="@array/config_vibration_durations" />
     <SwitchPreference
         android:key="pref_vibration_ignore_system_settings"
         android:title="@string/vibrate_ignore_system_settings"

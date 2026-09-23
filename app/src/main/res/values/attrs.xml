@@ -392,5 +392,8 @@
         <attr name="maxValue" format="integer" />
         <attr name="minValue" format="integer" />
         <attr name="stepValue" format="integer" />
+        <!-- Optional explicit list of selectable values, one per seek bar tick. Overrides
+             minValue/maxValue/stepValue, e.g. for a non-linear scale. -->
+        <attr name="values" format="reference" />
     </declare-styleable>
 </resources>

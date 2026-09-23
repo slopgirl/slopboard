@@ -43,6 +43,8 @@ public final class SeekBarDialogPreference extends DialogPreference
     private final int mMaxValue;
     private final int mMinValue;
     private final int mStepValue;
+    // When set, tick i of the seek bar selects mValues[i] (ascending); min/max/step are unused.
+    private final int[] mValues;
 
     private TextView mValueView;
     private SeekBar mSeekBar;
@@ -56,6 +58,8 @@ public final class SeekBarDialogPreference extends DialogPreference
         mMaxValue = a.getInt(R.styleable.SeekBarDialogPreference_maxValue, 0);
         mMinValue = a.getInt(R.styleable.SeekBarDialogPreference_minValue, 0);
         mStepValue = a.getInt(R.styleable.SeekBarDialogPreference_stepValue, 0);
+        final int valuesId = a.getResourceId(R.styleable.SeekBarDialogPreference_values, 0);
+        mValues = valuesId != 0 ? context.getResources().getIntArray(valuesId) : null;
         a.recycle();
         setDialogLayoutResource(R.layout.seek_bar_dialog);
     }
@@ -70,21 +74,37 @@ public final class SeekBarDialogPreference extends DialogPreference
     protected View onCreateDialogView() {
         final View view = super.onCreateDialogView();
         mSeekBar = (SeekBar)view.findViewById(R.id.seek_bar_dialog_bar);
-        mSeekBar.setMax(mMaxValue - mMinValue);
+        mSeekBar.setMax(mValues != null ? mValues.length - 1 : mMaxValue - mMinValue);
         mSeekBar.setOnSeekBarChangeListener(this);
         mValueView = (TextView)view.findViewById(R.id.seek_bar_dialog_value);
         return view;
     }
 
     private int getProgressFromValue(final int value) {
+        if (mValues != null) {
+            // Nearest listed value, so values stored before the list changed still land sensibly.
+            int best = 0;
+            for (int i = 1; i < mValues.length; i++) {
+                if (Math.abs(mValues[i] - value) < Math.abs(mValues[best] - value)) {
+                    best = i;
+                }
+            }
+            return best;
+        }
         return value - mMinValue;
     }
 
     private int getValueFromProgress(final int progress) {
+        if (mValues != null) {
+            return mValues[Math.min(mValues.length - 1, Math.max(0, progress))];
+        }
         return progress + mMinValue;
     }
 
     private int clipValue(final int value) {
+        if (mValues != null) {
+            return mValues[getProgressFromValue(value)];
+        }
         final int clippedValue = Math.min(mMaxValue, Math.max(mMinValue, value));
         if (mStepValue <= 1) {
             return clippedValue;
