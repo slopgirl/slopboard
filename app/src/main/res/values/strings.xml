@@ -120,6 +120,11 @@
     <string name="keyboard_color">Set custom keyboard color</string>
     <string name="show_special_chars">Show special characters</string>
     <string name="show_language_switch_key">Show language switch key</string>
+    <string name="show_emoji_key">Show emoji key</string>
+    <!-- Label of the key in the emoji panel that goes back to the letters -->
+    <string name="emoji_panel_back_to_letters">ABC</string>
+    <!-- Accessibility description of the delete key in the emoji panel -->
+    <string name="emoji_panel_delete">Delete</string>
     <string name="pref_use_on_screen">Show on-screen keyboard</string>
     <string name="pref_use_on_screen_summary">Show on-screen keyboard while using physical keyboard</string>
     <string name="pref_enable_ime_switch">Switch to other keyboards</string>

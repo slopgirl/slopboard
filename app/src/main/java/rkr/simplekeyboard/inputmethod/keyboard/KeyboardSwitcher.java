@@ -46,6 +46,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     private static final String TAG = KeyboardSwitcher.class.getSimpleName();
 
     private MainKeyboardView mKeyboardView;
+    private EmojiPanelView mEmojiPanel;
     private LatinIME mLatinIME;
     private RichInputMethodManager mRichImm;
 
@@ -119,6 +120,7 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
         builder.setKeyboardGeometry(keyboardWidth, keyboardHeight, keyboardBottomOffset);
         builder.setSubtype(mRichImm.getCurrentSubtype());
         builder.setLanguageSwitchKeyEnabled(mLatinIME.shouldShowLanguageSwitchKey());
+        builder.setEmojiKeyEnabled(settingsValues.mShowEmojiKey);
         builder.setShowSpecialChars(settingsValues.mShowSpecialChars);
         builder.setShowNumberRow(settingsValues.mShowNumberRow);
         mKeyboardLayoutSet = builder.build();
@@ -349,7 +351,27 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
     }
 
     public View getVisibleKeyboardView() {
+        if (mEmojiPanel != null && mEmojiPanel.isShowing()) {
+            return mEmojiPanel;
+        }
         return mKeyboardView;
+    }
+
+    public void showEmojiPanel() {
+        if (mEmojiPanel == null || mKeyboardView == null) {
+            return;
+        }
+        mEmojiPanel.show(mKeyboardView);
+        // Invisible rather than gone, so the input view keeps the keyboard's size.
+        mKeyboardView.setVisibility(View.INVISIBLE);
+    }
+
+    public void hideEmojiPanel() {
+        if (mEmojiPanel == null || !mEmojiPanel.isShowing()) {
+            return;
+        }
+        mEmojiPanel.hide();
+        mKeyboardView.setVisibility(View.VISIBLE);
     }
 
     public MainKeyboardView getMainKeyboardView() {
@@ -375,6 +397,8 @@ public final class KeyboardSwitcher implements KeyboardState.SwitchActions {
 
         mKeyboardView = currentInputView.findViewById(R.id.keyboard_view);
         mKeyboardView.setKeyboardActionListener(mLatinIME);
+        mEmojiPanel = currentInputView.findViewById(R.id.emoji_panel);
+        mEmojiPanel.setListeners(mLatinIME, this::hideEmojiPanel);
         return currentInputView;
     }
 }

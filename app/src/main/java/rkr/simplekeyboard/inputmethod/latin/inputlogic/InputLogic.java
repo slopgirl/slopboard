@@ -212,6 +212,9 @@ public final class InputLogic {
             case Constants.CODE_LANGUAGE_SWITCH:
                 handleLanguageSwitchKey();
                 break;
+            case Constants.CODE_EMOJI:
+                mLatinIME.showEmojiPanel();
+                break;
             case Constants.CODE_SHIFT_ENTER:
                 sendDownUpKeyEvent(KeyEvent.KEYCODE_ENTER, KeyEvent.META_SHIFT_ON);
                 // Shift + Enter is not supported in all devices

@@ -54,4 +54,6 @@ android {
 }
 
 dependencies {
+    // Emoji panel behind the emoji key.
+    implementation 'androidx.emoji2:emoji2-emojipicker:1.7.0'
 }

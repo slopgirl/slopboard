@@ -4,6 +4,8 @@ A fork of [Simple Keyboard](https://github.com/rkkr/simple-keyboard) with a few 
 
 - Adjustable keypress vibration duration (0–100 ms, fine steps at the low end)
 - Option to vibrate even when the system has touch feedback off, is silent or in battery saver
+- Emoji key with a built-in emoji picker
+- Test text fields in the key press settings
 
 See [CHANGELOG.md](CHANGELOG.md) for everything that differs from upstream.
 

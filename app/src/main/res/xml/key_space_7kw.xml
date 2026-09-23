@@ -23,6 +23,56 @@
     >
     <switch>
         <case
+            latin:emojiKeyEnabled="true"
+            latin:keyboardLayoutSet="bengali_akkhor|farsi|kannada|nepali_romanized|nepali_traditional|urdu|telugu"
+            latin:languageSwitchKeyEnabled="true"
+            >
+            <Key
+                latin:keyStyle="languageSwitchKeyStyle" />
+            <Key
+                latin:keyStyle="emojiKeyStyle" />
+            <Key
+                latin:keyStyle="spaceKeyStyle"
+                latin:keyWidth="36%p" />
+            <Key
+                latin:keyStyle="zwnjKeyStyle" />
+        </case>
+        <case
+            latin:emojiKeyEnabled="true"
+            latin:keyboardLayoutSet="bengali_akkhor|farsi|kannada|nepali_romanized|nepali_traditional|urdu|telugu"
+            latin:languageSwitchKeyEnabled="false"
+            >
+            <Key
+                latin:keyStyle="emojiKeyStyle" />
+            <Key
+                latin:keyStyle="spaceKeyStyle"
+                latin:keyWidth="45%p" />
+            <Key
+                latin:keyStyle="zwnjKeyStyle" />
+        </case>
+        <case
+            latin:emojiKeyEnabled="true"
+            latin:languageSwitchKeyEnabled="true"
+            >
+            <Key
+                latin:keyStyle="languageSwitchKeyStyle" />
+            <Key
+                latin:keyStyle="emojiKeyStyle" />
+            <Key
+                latin:keyStyle="spaceKeyStyle"
+                latin:keyWidth="45%p" />
+        </case>
+        <case
+            latin:emojiKeyEnabled="true"
+            >
+            <Key
+                latin:keyStyle="emojiKeyStyle" />
+            <Key
+                latin:keyStyle="spaceKeyStyle"
+                latin:keyWidth="54%p" />
+        </case>
+        <!-- emojiKeyEnabled="false" -->
+        <case
             latin:keyboardLayoutSet="bengali_akkhor|farsi|kannada|nepali_romanized|nepali_traditional|urdu|telugu"
             latin:languageSwitchKeyEnabled="true"
             >

@@ -41,6 +41,22 @@ CHANGELOG.md.
 - API <29 with the default duration keeps the old `view.performHapticFeedback` path.
 - Not yet tested on a real device.
 
+## Emoji key and panel
+- Uses androidx `emoji2-emojipicker` (EmojiPickerView), so `android.useAndroidX=true`. It's the
+  only dependency and costs ~1 MB of APK.
+- Key: `CODE_EMOJI` (-14), `!code/key_emoji`, `!icon/emoji_key` (drawable/sym_keyboard_emoji),
+  `emojiKeyStyle`. It's optional like the language switch key: Keyboard_Case attr
+  `emojiKeyEnabled`, flag in KeyboardId/KeyboardLayoutSet.Params, pref `pref_show_emoji_key`.
+  key_space_5kw/7kw have one `emojiKeyEnabled="true"` copy of each case, with the space bar one
+  key narrower (10%p / 9%p).
+- KeyboardCodesSet `ID_TO_NAME` and `DEFAULT` must stay index-aligned. Upstream's are already off
+  at the end (key_left/key_right have no codes); key_emoji was added right after
+  key_language_switch.
+- Panel: EmojiPanelView in input_view.xml, over the MainKeyboardView. When shown it takes the
+  keyboard's height and background, and the keyboard view goes INVISIBLE (not GONE, so the size
+  is kept). `KeyboardSwitcher#getVisibleKeyboardView` returns the panel while it's shown, since
+  LatinIME#onComputeInsets uses it for the touchable region. Closed on onFinishInputView.
+
 ## Settings test fields
 - Settings activity and IME share a process, so settings can talk to the running keyboard
   directly.

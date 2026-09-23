@@ -489,6 +489,12 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     void onFinishInputViewInternal(final boolean finishingInput) {
         super.onFinishInputView(finishingInput);
+        // Open the letters again next time, not the emoji panel.
+        mKeyboardSwitcher.hideEmojiPanel();
+    }
+
+    public void showEmojiPanel() {
+        mKeyboardSwitcher.showEmojiPanel();
     }
 
     protected void deallocateMemory() {
