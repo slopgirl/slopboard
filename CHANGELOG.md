@@ -1,0 +1,18 @@
+# Changelog
+
+Changes in slopboard on top of upstream [Simple Keyboard](https://github.com/rkkr/simple-keyboard).
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
+[Semantic Versioning](https://semver.org/).
+
+## [Unreleased]
+
+Based on upstream 6.7 (versionCode 148).
+
+### Added
+- Keypress vibration duration setting: system default, off (0 ms) or 1–100 ms. The slider is
+  non-linear — 1 ms steps up to 10 ms, then 2, 5 and 10 ms steps up to 100 ms.
+- "Ignore system vibration settings" switch (on by default): keypress vibration still fires with
+  touch feedback off, in silent mode or in battery saver.
+- Release builds are signed out of the box with a public dummy keystore; a gitignored
+  `keystore.properties` switches to a real key.
+- justfile, CHANGELOG and NOTES.

@@ -1,3 +1,36 @@
+# slopboard
+
+A fork of [Simple Keyboard](https://github.com/rkkr/simple-keyboard) with a few extras:
+
+- Adjustable keypress vibration duration (0–100 ms, fine steps at the low end)
+- Option to vibrate even when the system has touch feedback off, is silent or in battery saver
+
+See [CHANGELOG.md](CHANGELOG.md) for everything that differs from upstream.
+
+### Building
+
+Requires the Android SDK (`local.properties` with `sdk.dir`), Gradle and
+[just](https://github.com/casey/just):
+
+```sh
+just debug     # app/build/outputs/apk/debug/app-debug.apk
+just release   # app/build/outputs/apk/release/app-release.apk
+```
+
+Release builds are signed with a public dummy key in `keystore/`. To sign with your own key,
+create `keystore.properties` in the repo root:
+
+```properties
+storeFile=path/to/release.jks
+storePassword=...
+keyAlias=...
+keyPassword=...
+```
+
+---
+
+*Upstream README:*
+
 # Simple Keyboard
 
 [![Crowdin](https://d322cqt584bo4o.cloudfront.net/simple-keyboard/localized.svg)](https://crowdin.com/project/simple-keyboard)
